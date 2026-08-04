@@ -56,3 +56,10 @@ output "aks_cluster" {
     kubelet_identity_id = azurerm_kubernetes_cluster.main[0].kubelet_identity[0].object_id
   } : null
 }
+
+output "policy_assignments" {
+  value = {
+    allowed_locations = azurerm_subscription_policy_assignment.allowed_locations.id
+    required_tags     = azurerm_subscription_policy_assignment.required_tags.id
+  }
+}

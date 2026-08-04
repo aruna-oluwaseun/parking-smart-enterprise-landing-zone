@@ -17,7 +17,7 @@ resource "azurerm_role_assignment" "aks_subnet_network_contributor" {
 ##############################################
 
 resource "azurerm_kubernetes_cluster" "main" {
-  count = var.deploy_aks ? 1 : 0  
+  count               = var.deploy_aks ? 1 : 0
   name                = "aks-${local.name_prefix}"
   location            = azurerm_resource_group.workloads.location
   resource_group_name = azurerm_resource_group.workloads.name
@@ -92,8 +92,8 @@ resource "azurerm_kubernetes_cluster" "main" {
 ##############################################
 
 resource "azurerm_role_assignment" "aks_acr_pull" {
-  count = var.deploy_aks ? 1 : 0  
+  count                = var.deploy_aks ? 1 : 0
   scope                = azurerm_container_registry.main.id
   role_definition_name = "AcrPull"
-  principal_id = azurerm_kubernetes_cluster.main[0].kubelet_identity[0].object_id
+  principal_id         = azurerm_kubernetes_cluster.main[0].kubelet_identity[0].object_id
 }
