@@ -1,0 +1,7 @@
+subscription_id = "00000000-0000-0000-0000-000000000000"
+
+location     = "uksouth"
+project_name = "parkingsmart"
+environment  = "dev"
+owner        = "platform-team"
+cost_centre  = "portfolio"
