@@ -63,3 +63,16 @@ output "policy_assignments" {
     required_tags     = azurerm_subscription_policy_assignment.required_tags.id
   }
 }
+
+output "defender_for_cloud_plans" {
+  value = {
+    virtual_machines      = azurerm_security_center_subscription_pricing.virtual_machines.tier
+    storage_accounts      = azurerm_security_center_subscription_pricing.storage_accounts.tier
+    key_vaults            = azurerm_security_center_subscription_pricing.key_vaults.tier
+    container_registry    = azurerm_security_center_subscription_pricing.container_registry.tier
+    containers            = azurerm_security_center_subscription_pricing.containers.tier
+    app_services          = azurerm_security_center_subscription_pricing.app_services.tier
+    open_source_databases = azurerm_security_center_subscription_pricing.open_source_databases.tier
+    cloud_posture         = azurerm_security_center_subscription_pricing.cloud_posture.tier
+  }
+}
