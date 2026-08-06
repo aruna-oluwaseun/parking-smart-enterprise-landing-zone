@@ -106,3 +106,9 @@ variable "deploy_aks" {
   type        = bool
   default     = false
 }
+
+variable "deploy_sentinel" {
+  description = "Controls whether Microsoft Sentinel is enabled."
+  type        = bool
+  default     = false
+}

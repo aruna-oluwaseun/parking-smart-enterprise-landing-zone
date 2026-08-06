@@ -76,3 +76,10 @@ output "defender_for_cloud_plans" {
     cloud_posture         = azurerm_security_center_subscription_pricing.cloud_posture.tier
   }
 }
+
+output "sentinel" {
+  value = {
+    enabled      = var.deploy_sentinel
+    workspace_id = azurerm_log_analytics_workspace.main.id
+  }
+}
