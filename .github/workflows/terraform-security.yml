@@ -37,6 +37,8 @@ jobs:
         uses: bridgecrewio/checkov-action@master
         with:
           directory: terraform/environments/dev
+          config_file: .checkov.yml
+          soft_fail: false
 
       - name: Run Trivy
         uses: aquasecurity/trivy-action@master

@@ -1,0 +1,20 @@
+quiet: true
+compact: true
+framework:
+  - terraform
+
+skip-check:
+  # Defender plans intentionally remain Free in the development subscription
+  - CKV_AZURE_19
+  - CKV_AZURE_55
+  - CKV_AZURE_61
+  - CKV_AZURE_84
+  - CKV_AZURE_86
+  - CKV_AZURE_87
+
+  # Enterprise ACR features deferred because this is a single-region development environment
+  - CKV_AZURE_165
+  - CKV_AZURE_166
+  - CKV_AZURE_167
+  - CKV_AZURE_233
+  - CKV_AZURE_237
