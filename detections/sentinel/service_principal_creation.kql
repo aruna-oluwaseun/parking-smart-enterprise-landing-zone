@@ -1,0 +1,3 @@
+AuditLogs
+| where OperationName has "Add service principal"
+| project TimeGenerated, InitiatedBy, Result

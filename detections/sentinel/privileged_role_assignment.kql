@@ -1,0 +1,17 @@
+AuditLogs
+| where OperationName has_any (
+    "Add member to role",
+    "Add eligible member to role",
+    "Add scoped member to role"
+)
+| extend InitiatedByUser = tostring(InitiatedBy.user.userPrincipalName)
+| extend TargetUser = tostring(TargetResources[0].userPrincipalName)
+| extend RoleName = tostring(TargetResources[0].modifiedProperties[1].newValue)
+| project
+    TimeGenerated,
+    OperationName,
+    InitiatedByUser,
+    TargetUser,
+    RoleName,
+    Result
+| order by TimeGenerated desc

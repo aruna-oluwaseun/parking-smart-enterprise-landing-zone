@@ -1,0 +1,7 @@
+SigninLogs
+| summarize
+    Locations = make_set(Location),
+    Count = count()
+    by UserPrincipalName, bin(TimeGenerated, 1h)
+| where array_length(Locations) > 1
+| project TimeGenerated, UserPrincipalName, Locations

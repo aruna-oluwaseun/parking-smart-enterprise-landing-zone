@@ -1,0 +1,5 @@
+AzureActivity
+| where OperationNameValue contains "WRITE"
+| summarize Deployments = count()
+    by Caller, bin(TimeGenerated, 1h)
+| where Deployments > 10

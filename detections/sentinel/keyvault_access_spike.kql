@@ -1,0 +1,6 @@
+AzureDiagnostics
+| where ResourceType == "VAULTS"
+| summarize AccessCount = count()
+    by CallerIPAddress, bin(TimeGenerated, 5m)
+| where AccessCount > 50
+| order by AccessCount desc

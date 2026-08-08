@@ -1,0 +1,4 @@
+SigninLogs
+| where ResultDescription has "account is disabled"
+| project TimeGenerated, UserPrincipalName, IPAddress
+| order by TimeGenerated desc

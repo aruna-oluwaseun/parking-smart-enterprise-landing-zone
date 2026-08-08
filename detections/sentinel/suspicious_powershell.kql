@@ -1,0 +1,8 @@
+SecurityEvent
+| where EventID == 4688
+| where CommandLine has_any (
+    "Invoke-WebRequest",
+    "DownloadString",
+    "EncodedCommand"
+)
+| project TimeGenerated, Computer, Account, CommandLine
