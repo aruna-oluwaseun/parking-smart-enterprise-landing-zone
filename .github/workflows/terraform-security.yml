@@ -45,7 +45,8 @@ jobs:
         with:
           scan-type: config
           scan-ref: terraform/environments/dev
-            gitleaks:
+          
+    gitleaks:
     name: Gitleaks secret scan
     runs-on: ubuntu-latest
 
