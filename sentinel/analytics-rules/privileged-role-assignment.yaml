@@ -1,0 +1,36 @@
+name: Privileged Role Assignment Detected
+
+description: >
+  Detects new privileged role assignments in Microsoft Entra ID.
+
+severity: High
+
+enabled: true
+
+query: |
+  AuditLogs
+  | where OperationName has_any (
+      "Add member to role",
+      "Add eligible member to role",
+      "Add scoped member to role"
+  )
+  | extend InitiatedByUser = tostring(InitiatedBy.user.userPrincipalName)
+  | extend TargetUser = tostring(TargetResources[0].userPrincipalName)
+  | project
+      TimeGenerated,
+      OperationName,
+      InitiatedByUser,
+      TargetUser,
+      Result
+
+queryFrequency: PT5M
+queryPeriod: PT10M
+triggerOperator: GreaterThan
+triggerThreshold: 0
+
+tactics:
+  - Persistence
+  - PrivilegeEscalation
+
+techniques:
+  - T1098

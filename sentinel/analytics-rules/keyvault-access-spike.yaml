@@ -1,0 +1,32 @@
+name: Key Vault Access Spike
+
+description: >
+  Detects unusually high volumes of Azure Key Vault access activity
+  from a single source IP address.
+
+severity: High
+
+enabled: true
+
+query: |
+  AzureDiagnostics
+  | where ResourceType == "VAULTS"
+  | summarize
+      AccessCount = count()
+      by CallerIPAddress, bin(TimeGenerated, 5m)
+  | where AccessCount > 50
+  | project
+      TimeGenerated,
+      CallerIPAddress,
+      AccessCount
+
+queryFrequency: PT5M
+queryPeriod: PT10M
+triggerOperator: GreaterThan
+triggerThreshold: 0
+
+tactics:
+  - Collection
+
+techniques:
+  - T1005
