@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "incidentTitle": {
+      "type": "String"
+    },
+    "incidentSeverity": {
+      "type": "String"
+    },
+    "incidentUrl": {
+      "type": "String"
+    }
+  },
+  "triggers": {
+    "manual": {
+      "type": "Request",
+      "kind": "Http",
+      "inputs": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "incidentTitle": {
+              "type": "string"
+            },
+            "incidentSeverity": {
+              "type": "string"
+            },
+            "incidentUrl": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "actions": {
+    "Build_Security_Notification": {
+      "type": "Compose",
+      "inputs": {
+        "title": "@triggerBody()?['incidentTitle']",
+        "severity": "@triggerBody()?['incidentSeverity']",
+        "incidentUrl": "@triggerBody()?['incidentUrl']",
+        "message": "Parking Smart security incident requires investigation."
+      }
+    }
+  },
+  "outputs": {}
+}

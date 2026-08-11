@@ -1,0 +1,71 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "userPrincipalName": {
+      "type": "String"
+    },
+    "incidentId": {
+      "type": "String"
+    },
+    "analystApproved": {
+      "type": "Bool"
+    }
+  },
+  "triggers": {
+    "manual": {
+      "type": "Request",
+      "kind": "Http",
+      "inputs": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "userPrincipalName": {
+              "type": "string"
+            },
+            "incidentId": {
+              "type": "string"
+            },
+            "analystApproved": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  },
+  "actions": {
+    "Check_Analyst_Approval": {
+      "type": "If",
+      "expression": {
+        "equals": [
+          "@triggerBody()?['analystApproved']",
+          true
+        ]
+      },
+      "actions": {
+        "Prepare_Account_Disable_Action": {
+          "type": "Compose",
+          "inputs": {
+            "userPrincipalName": "@triggerBody()?['userPrincipalName']",
+            "incidentId": "@triggerBody()?['incidentId']",
+            "action": "Disable Entra ID account",
+            "status": "Approved for containment"
+          }
+        }
+      },
+      "else": {
+        "actions": {
+          "Record_No_Action": {
+            "type": "Compose",
+            "inputs": {
+              "status": "No containment action taken",
+              "reason": "Analyst approval not granted"
+            }
+          }
+        }
+      }
+    }
+  },
+  "outputs": {}
+}
