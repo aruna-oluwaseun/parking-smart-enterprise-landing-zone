@@ -1,0 +1,30 @@
+// ==========================================================
+// Detection: Guest User Privilege Escalation
+// Description: Detects privileged Azure or Entra role assignment
+//              activity involving guest identities.
+// MITRE ATT&CK: T1098.003 - Additional Cloud Roles
+// Tactic: Persistence / Privilege Escalation
+// Severity: High
+// Data Source: AuditLogs
+// False Positives: Approved B2B administration,
+//                  temporary consultant access
+// Response Playbook: create-incident / notify-teams
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
+AuditLogs
+| where OperationName has_any (
+    "Add member to role",
+    "Add eligible member to role"
+)
+| extend Target = tostring(TargetResources[0].userPrincipalName)
+| where Target contains "#EXT#"
+| project
+    TimeGenerated,
+    OperationName,
+    InitiatedBy,
+    Target,
+    TargetResources,
+    Result
+| order by TimeGenerated desc

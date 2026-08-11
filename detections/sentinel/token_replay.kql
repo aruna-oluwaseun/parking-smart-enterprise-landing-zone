@@ -1,0 +1,27 @@
+// ==========================================================
+// Detection: Possible Token Replay
+// Description: Detects the same sign-in correlation appearing
+//              from multiple source IP addresses.
+// MITRE ATT&CK: T1528 - Steal Application Access Token
+// Tactic: Credential Access
+// Severity: High
+// Data Source: SigninLogs
+// False Positives: Proxy changes, mobile networks, Microsoft
+//                  authentication infrastructure
+// Response Playbook: enrich-ioc / create-incident
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
+SigninLogs
+| summarize
+    SourceIPs = make_set(IPAddress),
+    IPCount = dcount(IPAddress)
+    by UserPrincipalName, CorrelationId, bin(TimeGenerated, 15m)
+| where IPCount > 1
+| project
+    TimeGenerated,
+    UserPrincipalName,
+    CorrelationId,
+    SourceIPs,
+    IPCount

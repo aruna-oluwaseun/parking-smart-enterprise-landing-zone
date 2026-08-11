@@ -1,0 +1,28 @@
+// ==========================================================
+// Detection: Suspicious OAuth Consent Grant
+// Description: Detects OAuth consent activity that may grant a
+//              third-party application access to cloud resources.
+// MITRE ATT&CK: T1528 - Steal Application Access Token
+// Tactic: Credential Access
+// Severity: High
+// Data Source: AuditLogs
+// False Positives: Approved enterprise application consent,
+//                  legitimate SaaS onboarding
+// Response Playbook: create-incident
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
+AuditLogs
+| where OperationName has_any (
+    "Consent to application",
+    "Add OAuth2PermissionGrant",
+    "Add delegated permission grant"
+)
+| project
+    TimeGenerated,
+    OperationName,
+    InitiatedBy,
+    TargetResources,
+    Result
+| order by TimeGenerated desc

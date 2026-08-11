@@ -1,0 +1,28 @@
+// ==========================================================
+// Detection: MFA Disabled or Modified
+// Description: Detects changes to authentication methods that
+//              may weaken or disable multi-factor authentication.
+// MITRE ATT&CK: T1556.006 - Multi-Factor Authentication
+// Tactic: Defense Impairment / Persistence / Credential Access
+// Severity: High
+// Data Source: AuditLogs
+// False Positives: Approved MFA resets, helpdesk actions,
+//                  authentication-method migrations
+// Response Playbook: create-incident / notify-teams
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
+AuditLogs
+| where OperationName has_any (
+    "Delete authentication method",
+    "Update user",
+    "Authentication Methods"
+)
+| project
+    TimeGenerated,
+    OperationName,
+    InitiatedBy,
+    TargetResources,
+    Result
+| order by TimeGenerated desc
