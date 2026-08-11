@@ -1,3 +1,18 @@
+// ==========================================================
+// Detection: Privileged Role Assignment
+// Description: Detects assignment of privileged roles that may
+//              provide an account with elevated permissions.
+// MITRE ATT&CK: T1098 - Account Manipulation
+// Tactic: Persistence / Privilege Escalation
+// Severity: High
+// Data Source: AuditLogs
+// False Positives: Approved administrator changes,
+//                  PIM activations, planned access changes
+// Response Playbook: create-incident
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
 SigninLogs
 | where ResultDescription has "account is disabled"
 | project TimeGenerated, UserPrincipalName, IPAddress

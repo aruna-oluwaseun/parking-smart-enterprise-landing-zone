@@ -1,3 +1,18 @@
+// ==========================================================
+// Detection: Key Vault Access Spike
+// Description: Detects unusually high volumes of Key Vault access
+//              from a single source that may indicate secret harvesting.
+// MITRE ATT&CK: T1555.006 - Cloud Secrets Management Stores
+// Tactic: Credential Access
+// Severity: High
+// Data Source: AzureDiagnostics
+// False Positives: CI/CD deployments, application restarts,
+//                  batch jobs and legitimate administrative activity
+// Response Playbook: enrich-ioc
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
 AzureDiagnostics
 | where ResourceType == "VAULTS"
 | summarize AccessCount = count()

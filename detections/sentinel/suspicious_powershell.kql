@@ -1,3 +1,18 @@
+// ==========================================================
+// Detection: Suspicious PowerShell Execution
+// Description: Detects PowerShell command-line patterns commonly
+//              associated with malicious script execution or downloads.
+// MITRE ATT&CK: T1059.001 - PowerShell
+// Tactic: Execution
+// Severity: High
+// Data Source: SecurityEvent
+// False Positives: Administrative scripts, deployment automation,
+//                  approved troubleshooting and management activity
+// Response Playbook: create-incident
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
 SecurityEvent
 | where EventID == 4688
 | where CommandLine has_any (

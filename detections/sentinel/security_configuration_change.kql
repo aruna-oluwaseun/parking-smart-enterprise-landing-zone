@@ -1,3 +1,18 @@
+// ==========================================================
+// Detection: Security Configuration Change
+// Description: Detects deletion or modification of Azure monitoring,
+//              policy or defensive controls that could reduce visibility.
+// MITRE ATT&CK: T1685 - Disable or Modify Tools
+// Tactic: Defense Impairment
+// Severity: High
+// Data Source: AzureActivity
+// False Positives: Approved security maintenance,
+//                  policy migrations and planned configuration changes
+// Response Playbook: create-incident / notify-teams
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
 AzureActivity
 | where OperationNameValue has_any (
     "MICROSOFT.INSIGHTS/DIAGNOSTICSETTINGS/DELETE",

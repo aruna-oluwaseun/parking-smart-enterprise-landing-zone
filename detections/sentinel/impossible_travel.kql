@@ -1,3 +1,18 @@
+// ==========================================================
+// Detection: Impossible Travel
+// Description: Detects user sign-ins from multiple geographic
+//              locations within a short period that may
+//              indicate compromised credentials.
+// MITRE ATT&CK: T1078 - Valid Accounts
+// Tactic: Initial Access
+// Severity: Medium
+// Data Source: SigninLogs
+// False Positives: VPN users, frequent travellers, cloud proxies
+// Response Playbook: notify-teams
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
 SigninLogs
 | summarize
     Locations = make_set(Location),

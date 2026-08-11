@@ -1,3 +1,19 @@
+// ==========================================================
+// Detection: Unusual Azure Resource Creation
+// Description: Detects an unusually high rate of Azure resource
+//              creation by a caller that may indicate unauthorized
+//              cloud infrastructure provisioning.
+// MITRE ATT&CK: T1578 - Modify Cloud Compute Infrastructure
+// Tactic: Defense Impairment
+// Severity: Medium
+// Data Source: AzureActivity
+// False Positives: Terraform deployments, approved migrations,
+//                  autoscaling and bulk infrastructure provisioning
+// Response Playbook: notify-teams / create-incident
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
 AzureActivity
 | where OperationNameValue contains "WRITE"
 | summarize Deployments = count()

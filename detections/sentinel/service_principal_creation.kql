@@ -1,3 +1,18 @@
+// ==========================================================
+// Detection: Service Principal Creation
+// Description: Detects creation of a new Microsoft Entra service
+//              principal that could be used to establish persistence.
+// MITRE ATT&CK: T1136 - Create Account
+// Tactic: Persistence
+// Severity: Medium
+// Data Source: AuditLogs
+// False Positives: Legitimate application registrations,
+//                  CI/CD integrations, approved SaaS applications
+// Response Playbook: create-incident
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
 AuditLogs
 | where OperationName has "Add service principal"
 | project TimeGenerated, InitiatedBy, Result

@@ -1,6 +1,30 @@
+// ==========================================================
+// Detection: Multiple Failed Sign-ins
+// Description: Detects repeated failed authentication attempts
+//              that may indicate brute-force activity.
+// MITRE ATT&CK: T1110 - Brute Force
+// Tactic: Credential Access
+// Severity: Medium
+// Data Source: SigninLogs
+// False Positives: Users repeatedly entering an incorrect password,
+//                  misconfigured applications, expired credentials
+// Response Playbook: notify-teams
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
 SigninLogs
 | where ResultType != 0
-| summarize FailedAttempts = count() by UserPrincipalName, IPAddress
+| summarize
+    FailedAttempts = count(),
+    FirstSeen = min(TimeGenerated),
+    LastSeen = max(TimeGenerated)
+    by UserPrincipalName, IPAddress
 | where FailedAttempts >= 5
-| project TimeGenerated, UserPrincipalName, IPAddress, FailedAttempts
+| project
+    FirstSeen,
+    LastSeen,
+    UserPrincipalName,
+    IPAddress,
+    FailedAttempts
 | order by FailedAttempts desc
