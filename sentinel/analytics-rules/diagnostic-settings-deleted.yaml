@@ -1,0 +1,30 @@
+id: 4112daec-8ad8-464a-9fb8-ba4a45e08d5c
+name: Azure diagnostic settings deleted
+description: |
+  Detects deletion of diagnostic settings that may reduce logging and monitoring visibility.
+severity: High
+kind: Scheduled
+
+queryFrequency: 5m
+queryPeriod: 10m
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - DefenseEvasion
+
+relevantTechniques:
+  - T1562
+
+query: |
+  AzureActivity
+  | where OperationNameValue =~ "MICROSOFT.INSIGHTS/DIAGNOSTICSETTINGS/DELETE"
+  | project
+      TimeGenerated,
+      Caller,
+      OperationNameValue,
+      ResourceGroup,
+      ResourceId,
+      ActivityStatusValue
+
+version: 1.0.0

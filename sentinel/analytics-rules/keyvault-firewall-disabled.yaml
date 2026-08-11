@@ -1,0 +1,32 @@
+id: b2a052fb-da66-42ef-a8ee-6199d19fbbd2
+name: Key Vault network security modified
+description: |
+  Detects Azure Key Vault configuration changes that may weaken network access restrictions.
+severity: High
+kind: Scheduled
+
+queryFrequency: 5m
+queryPeriod: 10m
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - DefenseEvasion
+
+relevantTechniques:
+  - T1562
+
+query: |
+  AzureActivity
+  | where ResourceProviderValue =~ "MICROSOFT.KEYVAULT"
+  | where OperationNameValue has "VAULTS/WRITE"
+  | project
+      TimeGenerated,
+      Caller,
+      OperationNameValue,
+      ResourceGroup,
+      ResourceId,
+      ActivityStatusValue,
+      Properties
+
+version: 1.0.0

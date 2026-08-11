@@ -1,0 +1,32 @@
+id: 5309e061-37dc-436f-9241-7415cbee3446
+name: Storage public access configuration changed
+description: |
+  Detects Azure Storage configuration changes that may expose cloud data publicly.
+severity: High
+kind: Scheduled
+
+queryFrequency: 5m
+queryPeriod: 10m
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - Collection
+
+relevantTechniques:
+  - T1530
+
+query: |
+  AzureActivity
+  | where ResourceProviderValue =~ "MICROSOFT.STORAGE"
+  | where OperationNameValue has "STORAGEACCOUNTS/WRITE"
+  | project
+      TimeGenerated,
+      Caller,
+      OperationNameValue,
+      ResourceGroup,
+      ResourceId,
+      ActivityStatusValue,
+      Properties
+
+version: 1.0.0

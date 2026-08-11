@@ -1,0 +1,43 @@
+id: a2cff850-85ac-41e3-8d44-df9637197c02
+name: Guest identity assigned privileged role
+description: |
+  Detects privileged role assignment activity involving
+  Microsoft Entra B2B guest identities.
+severity: High
+kind: Scheduled
+
+queryFrequency: 5m
+queryPeriod: 10m
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - Persistence
+  - PrivilegeEscalation
+
+relevantTechniques:
+  - T1098.003
+
+query: |
+  AuditLogs
+  | where OperationName has_any (
+      "Add member to role",
+      "Add eligible member to role"
+  )
+  | extend Target = tostring(TargetResources[0].userPrincipalName)
+  | where Target contains "#EXT#"
+  | project
+      TimeGenerated,
+      OperationName,
+      InitiatedBy,
+      Target,
+      TargetResources,
+      Result
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: Target
+
+version: 1.0.0

@@ -1,0 +1,41 @@
+id: af854b7d-6689-43f3-a76a-bb9f57dbc7a5
+name: Unusual Azure resource creation
+description: |
+  Detects unusually high volumes of Azure resource write operations by a single caller.
+severity: Medium
+kind: Scheduled
+
+queryFrequency: 15m
+queryPeriod: 1h
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - DefenseEvasion
+
+relevantTechniques:
+  - T1578
+
+query: |
+  AzureActivity
+  | where OperationNameValue contains "WRITE"
+  | summarize
+      Deployments = count(),
+      StartTime = min(TimeGenerated),
+      EndTime = max(TimeGenerated)
+      by Caller
+  | where Deployments > 10
+  | project
+      TimeGenerated = EndTime,
+      StartTime,
+      EndTime,
+      Caller,
+      Deployments
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: Caller
+
+version: 1.0.0

@@ -1,0 +1,35 @@
+id: 5d71c7f1-aee0-4d38-b5bd-593bfee2fef7
+name: MFA authentication method modified
+description: |
+  Detects changes to Microsoft Entra authentication methods
+  that could weaken multi-factor authentication controls.
+severity: High
+kind: Scheduled
+
+queryFrequency: 5m
+queryPeriod: 10m
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - CredentialAccess
+  - Persistence
+
+relevantTechniques:
+  - T1556.006
+
+query: |
+  AuditLogs
+  | where OperationName has_any (
+      "Delete authentication method",
+      "Authentication Methods",
+      "Update user"
+  )
+  | project
+      TimeGenerated,
+      OperationName,
+      InitiatedBy,
+      TargetResources,
+      Result
+
+version: 1.0.0

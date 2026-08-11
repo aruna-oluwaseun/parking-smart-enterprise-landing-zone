@@ -1,0 +1,34 @@
+id: d8b04101-6e65-4594-8182-72b032203e41
+name: Network Security Group modified
+description: |
+  Detects changes to Azure Network Security Groups or security rules that may weaken network controls.
+severity: High
+kind: Scheduled
+
+queryFrequency: 5m
+queryPeriod: 10m
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - DefenseEvasion
+
+relevantTechniques:
+  - T1562
+
+query: |
+  AzureActivity
+  | where OperationNameValue has_any (
+      "MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/WRITE",
+      "MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/SECURITYRULES/WRITE",
+      "MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/SECURITYRULES/DELETE"
+  )
+  | project
+      TimeGenerated,
+      Caller,
+      OperationNameValue,
+      ResourceGroup,
+      ResourceId,
+      ActivityStatusValue
+
+version: 1.0.0

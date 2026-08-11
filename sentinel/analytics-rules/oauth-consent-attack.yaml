@@ -1,0 +1,34 @@
+id: 67791cef-2e6b-4ef9-a28c-c6b492a483c8
+name: OAuth consent grant activity
+description: |
+  Detects Microsoft Entra OAuth consent operations that could
+  grant an application access to organizational resources.
+severity: High
+kind: Scheduled
+
+queryFrequency: 5m
+queryPeriod: 10m
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - CredentialAccess
+
+relevantTechniques:
+  - T1528
+
+query: |
+  AuditLogs
+  | where OperationName has_any (
+      "Consent to application",
+      "Add OAuth2PermissionGrant",
+      "Add delegated permission grant"
+  )
+  | project
+      TimeGenerated,
+      OperationName,
+      InitiatedBy,
+      TargetResources,
+      Result
+
+version: 1.0.0

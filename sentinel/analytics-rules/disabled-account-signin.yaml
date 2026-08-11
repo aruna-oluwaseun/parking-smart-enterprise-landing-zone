@@ -1,0 +1,40 @@
+id: 3233cf7b-c081-477c-8b42-cdfc9438f28f
+name: Sign-in attempt using disabled account
+description: |
+  Detects authentication attempts involving an account that has been disabled.
+severity: High
+kind: Scheduled
+
+queryFrequency: 5m
+queryPeriod: 10m
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - InitialAccess
+  - Persistence
+
+relevantTechniques:
+  - T1078
+
+query: |
+  SigninLogs
+  | where ResultDescription has "account is disabled"
+  | project
+      TimeGenerated,
+      UserPrincipalName,
+      IPAddress,
+      ResultDescription
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: UserPrincipalName
+
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: IPAddress
+
+version: 1.0.0

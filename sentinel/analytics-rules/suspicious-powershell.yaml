@@ -1,0 +1,44 @@
+id: ea10dcb7-cbae-46a5-a428-c475682e30ec
+name: Suspicious PowerShell execution
+description: |
+  Detects PowerShell command lines containing patterns frequently associated with malicious execution.
+severity: High
+kind: Scheduled
+
+queryFrequency: 5m
+queryPeriod: 10m
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - Execution
+
+relevantTechniques:
+  - T1059.001
+
+query: |
+  SecurityEvent
+  | where EventID == 4688
+  | where CommandLine has_any (
+      "Invoke-WebRequest",
+      "DownloadString",
+      "EncodedCommand"
+  )
+  | project
+      TimeGenerated,
+      Computer,
+      Account,
+      CommandLine
+
+entityMappings:
+  - entityType: Host
+    fieldMappings:
+      - identifier: HostName
+        columnName: Computer
+
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: Account
+
+version: 1.0.0

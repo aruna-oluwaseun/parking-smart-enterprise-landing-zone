@@ -1,0 +1,29 @@
+id: 90b7f6af-4cf4-4d28-800f-4d19a8526eb7
+name: New service principal created
+description: |
+  Detects creation of a new Microsoft Entra service principal that may be used for persistence.
+severity: Medium
+kind: Scheduled
+
+queryFrequency: 5m
+queryPeriod: 10m
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - Persistence
+
+relevantTechniques:
+  - T1136.003
+
+query: |
+  AuditLogs
+  | where OperationName has "Add service principal"
+  | project
+      TimeGenerated,
+      OperationName,
+      InitiatedBy,
+      TargetResources,
+      Result
+
+version: 1.0.0

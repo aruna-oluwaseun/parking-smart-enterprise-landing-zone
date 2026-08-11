@@ -1,0 +1,44 @@
+id: token-replay.yaml
+name: Possible authentication token misuse
+description: |
+  Detects the same user and correlation identifier being observed
+  from multiple source IP addresses in a short time window.
+severity: High
+kind: Scheduled
+
+queryFrequency: 5m
+queryPeriod: 15m
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - CredentialAccess
+
+relevantTechniques:
+  - T1528
+
+query: |
+  SigninLogs
+  | summarize
+      SourceIPs = make_set(IPAddress),
+      IPCount = dcount(IPAddress),
+      StartTime = min(TimeGenerated),
+      EndTime = max(TimeGenerated)
+      by UserPrincipalName, CorrelationId
+  | where IPCount > 1
+  | project
+      TimeGenerated = EndTime,
+      StartTime,
+      EndTime,
+      UserPrincipalName,
+      CorrelationId,
+      SourceIPs,
+      IPCount
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: UserPrincipalName
+
+version: 1.0.0
