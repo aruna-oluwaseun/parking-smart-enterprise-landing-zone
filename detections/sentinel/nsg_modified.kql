@@ -1,0 +1,29 @@
+// ==========================================================
+// Detection: Network Security Group Modified
+// Description: Detects creation, deletion, or modification of
+//              Azure NSG rules that may weaken network controls.
+// MITRE ATT&CK: T1686.001 - Cloud Firewall
+// Tactic: Defense Impairment
+// Severity: High
+// Data Source: AzureActivity
+// False Positives: Approved firewall changes, Terraform deployments,
+//                  planned network maintenance
+// Response Playbook: create-incident / notify-teams
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
+AzureActivity
+| where OperationNameValue has_any (
+    "MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/WRITE",
+    "MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/SECURITYRULES/WRITE",
+    "MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/SECURITYRULES/DELETE"
+)
+| project
+    TimeGenerated,
+    Caller,
+    OperationNameValue,
+    ResourceGroup,
+    ResourceId,
+    ActivityStatusValue
+| order by TimeGenerated desc

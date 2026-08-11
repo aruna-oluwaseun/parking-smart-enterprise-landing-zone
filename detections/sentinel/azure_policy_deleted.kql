@@ -1,0 +1,27 @@
+// ==========================================================
+// Detection: Azure Policy Deleted
+// Description: Detects deletion of Azure Policy assignments or
+//              definitions that may weaken governance controls.
+// MITRE ATT&CK: T1685 - Disable or Modify Tools
+// Tactic: Defense Impairment
+// Severity: High
+// Data Source: AzureActivity
+// False Positives: Approved policy migrations, governance changes
+// Response Playbook: create-incident / notify-teams
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
+AzureActivity
+| where OperationNameValue has_any (
+    "MICROSOFT.AUTHORIZATION/POLICYASSIGNMENTS/DELETE",
+    "MICROSOFT.AUTHORIZATION/POLICYDEFINITIONS/DELETE"
+)
+| project
+    TimeGenerated,
+    Caller,
+    OperationNameValue,
+    ResourceGroup,
+    ResourceId,
+    ActivityStatusValue
+| order by TimeGenerated desc

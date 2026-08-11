@@ -1,0 +1,27 @@
+// ==========================================================
+// Detection: Key Vault Network Security Modified
+// Description: Detects configuration changes to Azure Key Vault
+//              that may weaken network access restrictions.
+// MITRE ATT&CK: T1686.001 - Cloud Firewall
+// Tactic: Defense Impairment
+// Severity: High
+// Data Source: AzureActivity
+// False Positives: Approved private endpoint migrations,
+//                  planned Key Vault network configuration changes
+// Response Playbook: create-incident / notify-teams
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
+AzureActivity
+| where ResourceProviderValue =~ "MICROSOFT.KEYVAULT"
+| where OperationNameValue has "VAULTS/WRITE"
+| project
+    TimeGenerated,
+    Caller,
+    OperationNameValue,
+    ResourceGroup,
+    ResourceId,
+    ActivityStatusValue,
+    Properties
+| order by TimeGenerated desc

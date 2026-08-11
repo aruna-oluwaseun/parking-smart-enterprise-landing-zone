@@ -1,0 +1,27 @@
+// ==========================================================
+// Detection: Storage Public Access Configuration Changed
+// Description: Detects Azure Storage configuration changes that
+//              may expose cloud-stored data to public access.
+// MITRE ATT&CK: T1530 - Data from Cloud Storage
+// Tactic: Collection
+// Severity: High
+// Data Source: AzureActivity
+// False Positives: Approved storage configuration changes,
+//                  public static-content hosting
+// Response Playbook: create-incident / notify-teams
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
+AzureActivity
+| where ResourceProviderValue =~ "MICROSOFT.STORAGE"
+| where OperationNameValue has "STORAGEACCOUNTS/WRITE"
+| project
+    TimeGenerated,
+    Caller,
+    OperationNameValue,
+    ResourceGroup,
+    ResourceId,
+    ActivityStatusValue,
+    Properties
+| order by TimeGenerated desc

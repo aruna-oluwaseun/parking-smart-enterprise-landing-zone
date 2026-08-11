@@ -1,0 +1,26 @@
+// ==========================================================
+// Detection: Azure Diagnostic Settings Deleted
+// Description: Detects deletion of Azure diagnostic settings that
+//              may reduce security monitoring and audit visibility.
+// MITRE ATT&CK: T1685.002 - Disable or Modify Cloud Log
+// Tactic: Defense Impairment
+// Severity: High
+// Data Source: AzureActivity
+// False Positives: Approved monitoring migrations,
+//                  workspace reconfiguration
+// Response Playbook: create-incident / notify-teams
+// Author: Aruna Oluwaseun
+// Last Updated: August 2026
+// ==========================================================
+
+AzureActivity
+| where OperationNameValue =~
+    "MICROSOFT.INSIGHTS/DIAGNOSTICSETTINGS/DELETE"
+| project
+    TimeGenerated,
+    Caller,
+    OperationNameValue,
+    ResourceGroup,
+    ResourceId,
+    ActivityStatusValue
+| order by TimeGenerated desc
