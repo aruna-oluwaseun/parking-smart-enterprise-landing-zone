@@ -106,5 +106,6 @@ jobs:
           python -m pip install pyyaml
 
       - name: Validate Sentinel detection content
+        working-directory: ${{ github.workspace }}
         run: |
-           python ../../../scripts/validate_detection_content.py
+          python scripts/validate_detection_content.py
