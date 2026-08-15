@@ -1,36 +1,59 @@
-name: Multiple Failed Sign-ins
+id: 72f93fc3-7932-402c-a460-17c665c2df43
 
-description: >
+name: Multiple failed sign-ins
+
+description: |
   Detects repeated failed Microsoft Entra ID authentication attempts
-  from the same user and IP address.
+  from the same user and IP address that may indicate brute-force activity.
 
 severity: Medium
+kind: Scheduled
 
-enabled: true
+kqlFile: failed_signins.kql
+
+queryFrequency: 5m
+queryPeriod: 10m
+
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - CredentialAccess
+
+relevantTechniques:
+  - T1110
 
 query: |
   SigninLogs
   | where ResultType != 0
   | summarize
       FailedAttempts = count(),
-      FirstSeen = min(TimeGenerated),
-      LastSeen = max(TimeGenerated)
+      StartTime = min(TimeGenerated),
+      EndTime = max(TimeGenerated)
       by UserPrincipalName, IPAddress
   | where FailedAttempts >= 5
   | project
-      FirstSeen,
-      LastSeen,
+      TimeGenerated = EndTime,
+      StartTime,
+      EndTime,
       UserPrincipalName,
       IPAddress,
       FailedAttempts
+  | order by FailedAttempts desc
 
-queryFrequency: PT5M
-queryPeriod: PT10M
-triggerOperator: GreaterThan
-triggerThreshold: 0
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: UserPrincipalName
 
-tactics:
-  - CredentialAccess
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: IPAddress
 
-techniques:
-  - T1110
+eventGroupingSettings:
+  aggregationKind: SingleAlert
+
+status: Available
+version: 1
