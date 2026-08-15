@@ -1,8 +1,10 @@
-id: af854b7d-6689-43f3-a76a-bb9f57dbc7a5
+﻿id: af854b7d-6689-43f3-a76a-bb9f57dbc7a5
 name: Unusual Azure resource creation
 description: |
   Detects unusually high volumes of Azure resource write operations by a single caller.
 severity: Medium
+enabled: true
+kqlFile: resource_creation_anomaly.kql
 kind: Scheduled
 
 queryFrequency: 15m

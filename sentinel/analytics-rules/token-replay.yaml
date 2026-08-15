@@ -1,9 +1,11 @@
-id: token-replay.yaml
+﻿id: 87205b20-6d0b-4889-9bd6-026a39102674
 name: Possible authentication token misuse
 description: |
   Detects the same user and correlation identifier being observed
   from multiple source IP addresses in a short time window.
 severity: High
+kqlFile: token_replay.kql
+enabled: true
 kind: Scheduled
 
 queryFrequency: 5m

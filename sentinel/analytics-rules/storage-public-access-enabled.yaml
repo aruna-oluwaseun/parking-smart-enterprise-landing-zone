@@ -1,8 +1,10 @@
-id: 5309e061-37dc-436f-9241-7415cbee3446
+﻿id: 2f693d11-fcac-4281-92c2-51e0ce124c6b
 name: Storage public access configuration changed
 description: |
   Detects Azure Storage configuration changes that may expose cloud data publicly.
 severity: High
+kqlFile: storage_public_access_enabled.kql
+enabled: true
 kind: Scheduled
 
 queryFrequency: 5m

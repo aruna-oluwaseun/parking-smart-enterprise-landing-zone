@@ -1,8 +1,10 @@
-id: ed9f08d6-54e9-49f4-ad07-10af579d62f6
+﻿id: ed9f08d6-54e9-49f4-ad07-10af579d62f6
 name: Azure Policy deleted
 description: |
   Detects deletion of Azure Policy assignments or definitions that may weaken governance controls.
 severity: High
+enabled: true
+kqlFile: azure_policy_deleted.kql
 kind: Scheduled
 
 queryFrequency: 5m

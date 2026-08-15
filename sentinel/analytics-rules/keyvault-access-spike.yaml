@@ -1,8 +1,10 @@
-id: 2109e061-37dc-436f-9241-7415cbee3446g
+﻿id: ce014747-a73d-4e91-8ae8-f2ff7d6e13c5
 name: Key Vault access spike
 description: |
   Detects unusually high volumes of Key Vault activity from a single source IP address.
 severity: High
+enabled: true
+kqlFile: keyvault_access_spike.kql
 kind: Scheduled
 
 queryFrequency: 5m

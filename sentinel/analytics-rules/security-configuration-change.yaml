@@ -1,11 +1,29 @@
-name: Security Control Modification
+id: e3b31cac-5333-49eb-b04b-a0923b131df3
+name: Security Configuration Change
 
-description: >
-  Detects deletion of Azure security monitoring or policy controls.
+description: |
+  Detects deletion or modification of Azure monitoring, policy,
+  or defensive security controls that may reduce security visibility
+  or weaken the environment's defensive posture.
 
 severity: High
-
+kqlFile: security-configuration-change.kql
 enabled: true
+kind: Scheduled
+
+kqlFile: security_configuration_change.kql
+
+queryFrequency: 5m
+queryPeriod: 10m
+
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - DefenseEvasion
+
+relevantTechniques:
+  - T1685
 
 query: |
   AzureActivity
@@ -21,14 +39,15 @@ query: |
       ResourceGroup,
       ResourceId,
       ActivityStatusValue
+  | order by TimeGenerated desc
 
-queryFrequency: PT5M
-queryPeriod: PT10M
-triggerOperator: GreaterThan
-triggerThreshold: 0
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: Caller
 
-tactics:
-  - DefenseEvasion
+eventGroupingSettings:
+  aggregationKind: SingleAlert
 
-techniques:
-  - T1562
+version: 1.0.0

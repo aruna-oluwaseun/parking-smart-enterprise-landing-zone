@@ -1,8 +1,10 @@
-id: b2a052fb-da66-42ef-a8ee-6199d19fbbd2
+﻿id: b2a052fb-da66-42ef-a8ee-6199d19fbbd2
 name: Key Vault network security modified
 description: |
   Detects Azure Key Vault configuration changes that may weaken network access restrictions.
 severity: High
+enabled: true
+kqlFile: keyvault_firewall_disabled.kql
 kind: Scheduled
 
 queryFrequency: 5m

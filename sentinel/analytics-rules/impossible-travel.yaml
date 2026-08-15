@@ -1,12 +1,28 @@
+id: a1afaab2-9b67-4ab2-91c5-a6e171a38924
 name: Multiple Geographic Sign-in Locations
 
-description: >
-  Detects users authenticating from multiple geographic locations
-  within a short period.
+description: |
+  Detects a Microsoft Entra ID user authenticating from multiple
+  geographic locations within a short period, which may indicate
+  compromised credentials.
 
 severity: Medium
-
 enabled: true
+kqlFile: impossible_travel.kql
+kind: Scheduled
+
+queryFrequency: 15m
+queryPeriod: 1h
+
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - InitialAccess
+  - Persistence
+
+relevantTechniques:
+  - T1078
 
 query: |
   SigninLogs
@@ -21,14 +37,13 @@ query: |
       Locations,
       SigninCount
 
-queryFrequency: PT15M
-queryPeriod: PT1H
-triggerOperator: GreaterThan
-triggerThreshold: 0
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: UserPrincipalName
 
-tactics:
-  - InitialAccess
-  - Persistence
+eventGroupingSettings:
+  aggregationKind: SingleAlert
 
-techniques:
-  - T1078
+version: 1.0.0

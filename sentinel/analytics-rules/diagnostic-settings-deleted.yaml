@@ -1,8 +1,10 @@
-id: 4112daec-8ad8-464a-9fb8-ba4a45e08d5c
+﻿id: 4112daec-8ad8-464a-9fb8-ba4a45e08d5c
 name: Azure diagnostic settings deleted
 description: |
   Detects deletion of diagnostic settings that may reduce logging and monitoring visibility.
 severity: High
+enabled: true
+kqlFile: diagnostic_settings_deleted.kql
 kind: Scheduled
 
 queryFrequency: 5m

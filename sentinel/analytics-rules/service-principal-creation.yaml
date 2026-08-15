@@ -1,8 +1,10 @@
-id: 90b7f6af-4cf4-4d28-800f-4d19a8526eb7
+﻿id: 90b7f6af-4cf4-4d28-800f-4d19a8526eb7
 name: New service principal created
 description: |
   Detects creation of a new Microsoft Entra service principal that may be used for persistence.
 severity: Medium
+kqlFile: service_principal_creation.kql
+enabled: true
 kind: Scheduled
 
 queryFrequency: 5m

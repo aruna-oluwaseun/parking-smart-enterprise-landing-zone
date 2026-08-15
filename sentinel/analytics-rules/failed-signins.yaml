@@ -9,6 +9,8 @@ description: |
 severity: Medium
 kind: Scheduled
 
+enabled: true
+
 kqlFile: failed_signins.kql
 
 queryFrequency: 5m

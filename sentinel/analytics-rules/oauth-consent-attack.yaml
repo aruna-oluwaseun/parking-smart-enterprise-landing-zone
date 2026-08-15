@@ -1,9 +1,11 @@
-id: 67791cef-2e6b-4ef9-a28c-c6b492a483c8
+﻿id: 67791cef-2e6b-4ef9-a28c-c6b492a483c8
 name: OAuth consent grant activity
 description: |
   Detects Microsoft Entra OAuth consent operations that could
   grant an application access to organizational resources.
 severity: High
+enabled: true
+kqlFile: oauth_consent_attack.kql
 kind: Scheduled
 
 queryFrequency: 5m

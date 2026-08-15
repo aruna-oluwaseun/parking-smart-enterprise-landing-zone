@@ -1,8 +1,10 @@
-id: 3233cf7b-c081-477c-8b42-cdfc9438f28f
+﻿id: 3233cf7b-c081-477c-8b42-cdfc9438f28f
 name: Sign-in attempt using disabled account
 description: |
   Detects authentication attempts involving an account that has been disabled.
 severity: High
+enabled: true
+kqlFile: disabled_account_signin.kql
 kind: Scheduled
 
 queryFrequency: 5m

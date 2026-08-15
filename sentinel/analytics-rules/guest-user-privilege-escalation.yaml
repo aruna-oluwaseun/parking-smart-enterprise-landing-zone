@@ -1,9 +1,11 @@
-id: a2cff850-85ac-41e3-8d44-df9637197c02
+﻿id: a2cff850-85ac-41e3-8d44-df9637197c02
 name: Guest identity assigned privileged role
 description: |
   Detects privileged role assignment activity involving
   Microsoft Entra B2B guest identities.
 severity: High
+enabled: true
+kqlFile: guest_user_privilege_escalation.kql
 kind: Scheduled
 
 queryFrequency: 5m

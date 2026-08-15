@@ -1,8 +1,10 @@
-id: d8b04101-6e65-4594-8182-72b032203e41
+﻿id: d8b04101-6e65-4594-8182-72b032203e41
 name: Network Security Group modified
 description: |
   Detects changes to Azure Network Security Groups or security rules that may weaken network controls.
 severity: High
+enabled: true
+kqlFile: nsg_modified.kql
 kind: Scheduled
 
 queryFrequency: 5m

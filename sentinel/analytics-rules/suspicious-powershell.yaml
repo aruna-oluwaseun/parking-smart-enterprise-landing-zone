@@ -1,8 +1,10 @@
-id: ea10dcb7-cbae-46a5-a428-c475682e30ec
+﻿id: ea10dcb7-cbae-46a5-a428-c475682e30ec
 name: Suspicious PowerShell execution
 description: |
   Detects PowerShell command lines containing patterns frequently associated with malicious execution.
 severity: High
+kqlFile: suspicious_powershell.kql
+enabled: true
 kind: Scheduled
 
 queryFrequency: 5m

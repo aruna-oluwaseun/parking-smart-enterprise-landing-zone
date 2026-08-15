@@ -1,11 +1,31 @@
+id: 831cc7e5-73bf-483b-a631-46534f97f6aa
 name: Privileged Role Assignment Detected
 
-description: >
-  Detects new privileged role assignments in Microsoft Entra ID.
+description: |
+  Detects assignment of privileged Microsoft Entra ID roles that may
+  provide a user with elevated access and could indicate persistence
+  or privilege escalation activity.
 
 severity: High
-
 enabled: true
+kind: Scheduled
+severity: High
+enabled: true
+kqlFile: privileged_role_assignment.kql
+kind: Scheduled
+
+queryFrequency: 5m
+queryPeriod: 10m
+
+triggerOperator: gt
+triggerThreshold: 0
+
+tactics:
+  - Persistence
+  - PrivilegeEscalation
+
+relevantTechniques:
+  - T1098
 
 query: |
   AuditLogs
@@ -22,15 +42,15 @@ query: |
       InitiatedByUser,
       TargetUser,
       Result
+  | order by TimeGenerated desc
 
-queryFrequency: PT5M
-queryPeriod: PT10M
-triggerOperator: GreaterThan
-triggerThreshold: 0
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: TargetUser
 
-tactics:
-  - Persistence
-  - PrivilegeEscalation
+eventGroupingSettings:
+  aggregationKind: SingleAlert
 
-techniques:
-  - T1098
+version: 1.0.0

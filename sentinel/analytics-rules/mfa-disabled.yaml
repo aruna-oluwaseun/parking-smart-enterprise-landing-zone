@@ -1,9 +1,11 @@
-id: 5d71c7f1-aee0-4d38-b5bd-593bfee2fef7
+﻿id: 5d71c7f1-aee0-4d38-b5bd-593bfee2fef7
 name: MFA authentication method modified
 description: |
   Detects changes to Microsoft Entra authentication methods
   that could weaken multi-factor authentication controls.
 severity: High
+enabled: true
+kqlFile: mfa_disabled.kql
 kind: Scheduled
 
 queryFrequency: 5m
