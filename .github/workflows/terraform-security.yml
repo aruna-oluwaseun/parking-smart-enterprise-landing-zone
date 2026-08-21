@@ -109,3 +109,9 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           python scripts/validate_detection_content.py
+
+      - name: Validate Sentinel automation rules
+        working-directory: ${{ github.workspace }}
+        run: |
+          python scripts/validate_automation_rules.py
+          
