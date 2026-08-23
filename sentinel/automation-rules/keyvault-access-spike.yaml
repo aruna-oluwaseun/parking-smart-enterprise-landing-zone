@@ -1,0 +1,27 @@
+# keyvault-access-spike.yaml
+id: 99495a66-554f-4013-a0a3-7d9c34c19b65
+
+name: Key Vault Access Spike Response
+
+description: >
+  Responds to suspicious Key Vault access activity by enriching
+  indicators and notifying the SOC.
+
+enabled: true
+
+order: 120
+
+trigger:
+  incidentTitleContains:
+    - Key Vault Access Spike
+
+actions:
+  - playbook: enrich-ioc
+  - playbook: notify-teams
+
+incident:
+  severity:
+    - High
+
+status:
+  - New

@@ -1,0 +1,28 @@
+# impossible-travel.yaml
+id: 2a9fc5a4-8611-4e5e-930b-7c4a9a0f4f21
+
+name: Impossible Travel Response
+
+description: >
+  Responds to impossible travel incidents by notifying the SOC
+  and enriching related indicators.
+
+enabled: true
+
+order: 110
+
+trigger:
+  incidentTitleContains:
+    - Impossible Travel
+
+actions:
+  - playbook: enrich-ioc
+  - playbook: notify-teams
+
+incident:
+  severity:
+    - High
+    - Medium
+
+status:
+  - New

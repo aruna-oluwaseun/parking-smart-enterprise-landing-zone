@@ -1,0 +1,27 @@
+# guest-user-privilege-escalation.yaml
+id: 87ac410e-39b2-46f9-8608-e1e4d0b99eb8
+
+name: Guest Privilege Escalation Response
+
+description: >
+  Responds to suspicious guest privilege escalation by notifying
+  the SOC and preparing identity containment.
+
+enabled: true
+
+order: 130
+
+trigger:
+  incidentTitleContains:
+    - Guest Privilege Escalation
+
+actions:
+  - playbook: notify-teams
+  - playbook: disable-account
+
+incident:
+  severity:
+    - High
+
+status:
+  - New
