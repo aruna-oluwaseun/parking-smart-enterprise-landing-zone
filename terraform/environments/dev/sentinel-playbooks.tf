@@ -713,3 +713,146 @@ resource "azurerm_logic_app_action_custom" "disable_entra_account" {
     }
   })
 }
+
+##############################################
+# Create Incident - Sentinel RBAC
+##############################################
+
+resource "azurerm_role_assignment" "create_incident_sentinel_responder" {
+  count = var.deploy_sentinel ? 1 : 0
+
+  scope                = azurerm_log_analytics_workspace.main.id
+  role_definition_name = "Microsoft Sentinel Responder"
+
+  principal_id = azurerm_logic_app_workflow.create_incident[0].identity[0].principal_id
+}
+
+##############################################
+# Create Microsoft Sentinel Incident
+##############################################
+
+resource "azurerm_logic_app_action_custom" "create_sentinel_incident" {
+  count = var.deploy_sentinel ? 1 : 0
+
+  name         = "Create_Sentinel_Incident"
+  logic_app_id = azurerm_logic_app_workflow.create_incident[0].id
+
+  body = jsonencode({
+    type = "Http"
+
+    inputs = {
+      method = "PUT"
+
+      uri = "https://management.azure.com/subscriptions/${var.subscription_id}/resourceGroups/${azurerm_resource_group.monitoring.name}/providers/Microsoft.OperationalInsights/workspaces/${azurerm_log_analytics_workspace.main.name}/providers/Microsoft.SecurityInsights/incidents/@{guid()}?api-version=2025-09-01"
+
+      authentication = {
+        type     = "ManagedServiceIdentity"
+        audience = "https://management.azure.com/"
+      }
+
+      headers = {
+        "Content-Type" = "application/json"
+      }
+
+      body = {
+        properties = {
+          title       = "@triggerBody()?['incidentTitle']"
+          severity    = "@triggerBody()?['severity']"
+          description = "@triggerBody()?['description']"
+          status      = "New"
+        }
+      }
+    }
+
+    runAfter = {
+      Build_Incident_Payload = [
+        "Succeeded"
+      ]
+    }
+  })
+}
+
+##############################################
+# Notify Security Team - Key Vault Access
+##############################################
+
+resource "azurerm_role_assignment" "notify_security_key_vault_secrets_user" {
+  count = var.deploy_sentinel ? 1 : 0
+
+  scope                = azurerm_key_vault.main.id
+  role_definition_name = "Key Vault Secrets User"
+
+  principal_id = azurerm_logic_app_workflow.notify_security_team[0].identity[0].principal_id
+}
+
+##############################################
+# Retrieve Teams Webhook URL
+##############################################
+
+resource "azurerm_logic_app_action_custom" "get_teams_webhook_url" {
+  count = var.deploy_sentinel ? 1 : 0
+
+  name         = "Get_Teams_Webhook_URL"
+  logic_app_id = azurerm_logic_app_workflow.notify_security_team[0].id
+
+  body = jsonencode({
+    type = "Http"
+
+    inputs = {
+      method = "GET"
+
+      uri = "https://${azurerm_key_vault.main.name}.vault.azure.net/secrets/teams-soc-webhook-url?api-version=7.4"
+
+      authentication = {
+        type     = "ManagedServiceIdentity"
+        audience = "https://vault.azure.net"
+      }
+    }
+
+    runAfter = {
+      Build_Security_Notification = [
+        "Succeeded"
+      ]
+    }
+  })
+}
+
+##############################################
+# Send Security Alert to Microsoft Teams
+##############################################
+
+resource "azurerm_logic_app_action_custom" "send_teams_notification" {
+  count = var.deploy_sentinel ? 1 : 0
+
+  name         = "Send_Security_Alert_To_Teams"
+  logic_app_id = azurerm_logic_app_workflow.notify_security_team[0].id
+
+  body = jsonencode({
+    type = "Http"
+
+    inputs = {
+      method = "POST"
+
+      uri = "@body('Get_Teams_Webhook_URL')?['value']"
+
+      headers = {
+        "Content-Type" = "application/json"
+      }
+
+      body = {
+        title       = "@triggerBody()?['incidentTitle']"
+        severity    = "@triggerBody()?['incidentSeverity']"
+        description = "@triggerBody()?['description']"
+        incidentUrl = "@triggerBody()?['incidentUrl']"
+
+        message = "Parking Smart security incident requires investigation."
+      }
+    }
+
+    runAfter = {
+      Get_Teams_Webhook_URL = [
+        "Succeeded"
+      ]
+    }
+  })
+}
