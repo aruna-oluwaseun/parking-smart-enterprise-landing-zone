@@ -1,0 +1,39 @@
+// ==========================================================
+// Threat Hunt: Azure Security Control Tampering
+//
+// Hypothesis:
+// An attacker with sufficient Azure permissions may weaken
+// defensive controls by modifying or deleting security,
+// monitoring, policy, networking, or Key Vault configuration.
+//
+// MITRE ATT&CK:
+// T1562.001 - Impair Defenses: Disable or Modify Tools
+// T1562.007 - Impair Defenses: Disable or Modify Cloud Firewall
+//
+// Data Source:
+// AzureActivity
+// ==========================================================
+
+let SecurityControlOperations = dynamic([
+    "MICROSOFT.INSIGHTS/DIAGNOSTICSETTINGS/DELETE",
+    "MICROSOFT.INSIGHTS/DIAGNOSTICSETTINGS/WRITE",
+    "MICROSOFT.AUTHORIZATION/POLICYASSIGNMENTS/DELETE",
+    "MICROSOFT.AUTHORIZATION/POLICYDEFINITIONS/DELETE",
+    "MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/WRITE",
+    "MICROSOFT.KEYVAULT/VAULTS/WRITE"
+]);
+
+AzureActivity
+| where OperationNameValue in~ (SecurityControlOperations)
+| where ActivityStatusValue =~ "Success"
+| project
+    TimeGenerated,
+    Caller,
+    CallerIpAddress,
+    OperationNameValue,
+    ResourceGroup,
+    ResourceId,
+    SubscriptionId,
+    CorrelationId,
+    ActivityStatusValue
+| order by TimeGenerated desc

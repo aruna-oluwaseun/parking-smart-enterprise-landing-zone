@@ -1,0 +1,71 @@
+// ==========================================================
+// Threat Hunt: Suspicious Service Principal Activity
+//
+// Hypothesis:
+// An attacker may create or use a service principal to gain
+// persistence, access cloud resources, or perform actions
+// outside normal administrative patterns.
+//
+// MITRE ATT&CK:
+// T1136.003 - Create Account: Cloud Account
+// T1098     - Account Manipulation
+// T1078.004 - Valid Accounts: Cloud Accounts
+//
+// Data Sources:
+// Microsoft Entra ID AuditLogs
+// Microsoft Entra ID SigninLogs
+// ==========================================================
+
+let ServicePrincipalChanges =
+    AuditLogs
+    | where OperationName has_any (
+        "Add service principal",
+        "Add application",
+        "Add service principal credentials",
+        "Update application",
+        "Update service principal"
+    )
+    | extend InitiatedByUser =
+        tostring(InitiatedBy.user.userPrincipalName)
+    | extend InitiatedByApp =
+        tostring(InitiatedBy.app.displayName)
+    | extend TargetResource =
+        tostring(TargetResources[0].displayName)
+    | project
+        ChangeTime = TimeGenerated,
+        OperationName,
+        InitiatedByUser,
+        InitiatedByApp,
+        TargetResource,
+        Result;
+
+let ServicePrincipalSignins =
+    SigninLogs
+    | where ServicePrincipalId != ""
+    | project
+        SigninTime = TimeGenerated,
+        ServicePrincipalId,
+        ServicePrincipalName,
+        IPAddress,
+        AppDisplayName,
+        ResourceDisplayName,
+        ResultType,
+        Location;
+
+ServicePrincipalChanges
+| join kind=leftouter ServicePrincipalSignins
+    on $left.TargetResource == $right.ServicePrincipalName
+| where SigninTime between (ChangeTime .. ChangeTime + 24h)
+| project
+    ChangeTime,
+    SigninTime,
+    OperationName,
+    InitiatedByUser,
+    InitiatedByApp,
+    TargetResource,
+    ServicePrincipalId,
+    IPAddress,
+    ResourceDisplayName,
+    ResultType,
+    Location
+| order by SigninTime desc

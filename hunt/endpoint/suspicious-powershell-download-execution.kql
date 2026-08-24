@@ -1,0 +1,63 @@
+// ==========================================================
+// Threat Hunt: Suspicious PowerShell Download and Execution
+//
+// Hypothesis:
+// An attacker may use PowerShell to download and execute
+// malicious payloads, scripts, or tooling from remote locations.
+//
+// MITRE ATT&CK:
+// T1059.001 - Command and Scripting Interpreter: PowerShell
+// T1105     - Ingress Tool Transfer
+//
+// Data Source:
+// DeviceProcessEvents
+// ==========================================================
+
+DeviceProcessEvents
+| where FileName in~ ("powershell.exe", "pwsh.exe")
+| where ProcessCommandLine has_any (
+    "Invoke-WebRequest",
+    "iwr ",
+    "wget ",
+    "curl ",
+    "DownloadString",
+    "DownloadFile",
+    "Invoke-Expression",
+    "IEX",
+    "FromBase64String",
+    "-EncodedCommand",
+    "-enc "
+)
+| extend
+    HasDownloadCommand =
+        ProcessCommandLine has_any (
+            "Invoke-WebRequest",
+            "DownloadString",
+            "DownloadFile",
+            "wget ",
+            "curl "
+        ),
+    HasExecutionCommand =
+        ProcessCommandLine has_any (
+            "Invoke-Expression",
+            "IEX",
+            "-EncodedCommand",
+            "-enc ",
+            "FromBase64String"
+        )
+| where HasDownloadCommand or HasExecutionCommand
+| project
+    Timestamp,
+    DeviceName,
+    AccountName,
+    FileName,
+    ProcessCommandLine,
+    InitiatingProcessFileName,
+    InitiatingProcessCommandLine,
+    InitiatingProcessAccountName,
+    FolderPath,
+    ProcessId,
+    InitiatingProcessId,
+    SHA1,
+    SHA256
+| order by Timestamp desc

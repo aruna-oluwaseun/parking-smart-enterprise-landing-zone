@@ -1,0 +1,75 @@
+// ==========================================================
+// Threat Hunt: Suspicious Resource Creation After Role Change
+//
+// Hypothesis:
+// An attacker may obtain elevated Azure permissions and then
+// quickly create infrastructure to establish persistence,
+// stage tooling, or expand access.
+//
+// MITRE ATT&CK:
+// T1098     - Account Manipulation
+// T1136.003 - Create Account: Cloud Account
+// T1578     - Modify Cloud Compute Infrastructure
+//
+// Data Sources:
+// Microsoft Entra ID AuditLogs
+// AzureActivity
+// ==========================================================
+
+let PrivilegeChanges =
+    AuditLogs
+    | where OperationName has_any (
+        "Add member to role",
+        "Add eligible member to role",
+        "Add scoped member to role"
+    )
+    | extend InitiatedByUser =
+        tostring(InitiatedBy.user.userPrincipalName)
+    | extend TargetUser =
+        tostring(TargetResources[0].userPrincipalName)
+    | project
+        PrivilegeChangeTime = TimeGenerated,
+        InitiatedByUser,
+        TargetUser,
+        OperationName,
+        Result;
+
+let ResourceCreation =
+    AzureActivity
+    | where ActivityStatusValue =~ "Success"
+    | where OperationNameValue endswith "/WRITE"
+    | where OperationNameValue has_any (
+        "MICROSOFT.COMPUTE",
+        "MICROSOFT.CONTAINERINSTANCE",
+        "MICROSOFT.WEB",
+        "MICROSOFT.MANAGEDIDENTITY",
+        "MICROSOFT.AUTOMATION",
+        "MICROSOFT.LOGIC"
+    )
+    | project
+        ResourceCreationTime = TimeGenerated,
+        Caller,
+        CallerIpAddress,
+        OperationNameValue,
+        ResourceGroup,
+        ResourceId,
+        SubscriptionId;
+
+PrivilegeChanges
+| join kind=inner ResourceCreation
+    on $left.TargetUser == $right.Caller
+| where ResourceCreationTime between (
+    PrivilegeChangeTime ..
+    PrivilegeChangeTime + 2h
+)
+| project
+    PrivilegeChangeTime,
+    ResourceCreationTime,
+    InitiatedByUser,
+    TargetUser,
+    CallerIpAddress,
+    OperationNameValue,
+    ResourceGroup,
+    ResourceId,
+    SubscriptionId
+| order by ResourceCreationTime desc

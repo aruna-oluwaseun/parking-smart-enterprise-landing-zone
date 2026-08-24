@@ -1,0 +1,85 @@
+// ==========================================================
+// Threat Hunt: Suspicious LOLBin Execution
+//
+// Hypothesis:
+// An attacker may abuse legitimate Windows binaries to
+// download payloads, execute malicious code, bypass controls,
+// or proxy execution while blending into normal activity.
+//
+// MITRE ATT&CK:
+// T1218     - System Binary Proxy Execution
+// T1105     - Ingress Tool Transfer
+//
+// Data Source:
+// Microsoft Defender for Endpoint DeviceProcessEvents
+// ==========================================================
+
+DeviceProcessEvents
+| where FileName in~ (
+    "certutil.exe",
+    "mshta.exe",
+    "rundll32.exe",
+    "regsvr32.exe",
+    "bitsadmin.exe"
+)
+| extend SuspiciousReason = case(
+    FileName =~ "certutil.exe"
+        and ProcessCommandLine has_any (
+            "-urlcache",
+            "-decode",
+            "-decodehex"
+        ),
+        "Certutil download or decode activity",
+
+    FileName =~ "mshta.exe"
+        and ProcessCommandLine has_any (
+            "http://",
+            "https://",
+            "javascript:",
+            "vbscript:"
+        ),
+        "MSHTA remote or script execution",
+
+    FileName =~ "regsvr32.exe"
+        and ProcessCommandLine has_any (
+            "/i:",
+            "http://",
+            "https://",
+            "scrobj.dll"
+        ),
+        "Regsvr32 proxy execution",
+
+    FileName =~ "rundll32.exe"
+        and ProcessCommandLine has_any (
+            "javascript:",
+            "http://",
+            "https://"
+        ),
+        "Rundll32 suspicious execution",
+
+    FileName =~ "bitsadmin.exe"
+        and ProcessCommandLine has_any (
+            "/transfer",
+            "/addfile",
+            "http://",
+            "https://"
+        ),
+        "BITS download activity",
+
+    ""
+)
+| where isnotempty(SuspiciousReason)
+| project
+    Timestamp,
+    DeviceName,
+    AccountName,
+    FileName,
+    ProcessCommandLine,
+    SuspiciousReason,
+    InitiatingProcessFileName,
+    InitiatingProcessCommandLine,
+    InitiatingProcessAccountName,
+    FolderPath,
+    SHA1,
+    SHA256
+| order by Timestamp desc

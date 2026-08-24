@@ -1,0 +1,66 @@
+// ==========================================================
+// Threat Hunt: Privileged Role Assignment Followed by Sign-in
+//
+// Hypothesis:
+// An attacker may obtain or assign a privileged Entra ID role
+// and then use that account shortly afterwards to perform
+// privileged activity.
+//
+// MITRE ATT&CK:
+// T1098     - Account Manipulation
+// T1078.004 - Valid Accounts: Cloud Accounts
+//
+// Data Sources:
+// Microsoft Entra ID AuditLogs
+// Microsoft Entra ID SigninLogs
+// ==========================================================
+
+let PrivilegedRoleAssignments =
+    AuditLogs
+    | where OperationName has_any (
+        "Add member to role",
+        "Add eligible member to role",
+        "Add scoped member to role"
+    )
+    | extend InitiatedByUser =
+        tostring(InitiatedBy.user.userPrincipalName)
+    | extend TargetUser =
+        tostring(TargetResources[0].userPrincipalName)
+    | extend TargetRole =
+        tostring(TargetResources[0].modifiedProperties[1].newValue)
+    | project
+        AssignmentTime = TimeGenerated,
+        OperationName,
+        InitiatedByUser,
+        TargetUser,
+        TargetRole,
+        Result;
+
+let SuccessfulSignins =
+    SigninLogs
+    | where ResultType == 0
+    | project
+        SigninTime = TimeGenerated,
+        UserPrincipalName,
+        IPAddress,
+        AppDisplayName,
+        ResourceDisplayName,
+        Location,
+        ConditionalAccessStatus;
+
+PrivilegedRoleAssignments
+| join kind=inner SuccessfulSignins
+    on $left.TargetUser == $right.UserPrincipalName
+| where SigninTime between (AssignmentTime .. AssignmentTime + 2h)
+| project
+    AssignmentTime,
+    SigninTime,
+    InitiatedByUser,
+    TargetUser,
+    TargetRole,
+    IPAddress,
+    AppDisplayName,
+    ResourceDisplayName,
+    Location,
+    ConditionalAccessStatus
+| order by SigninTime desc
