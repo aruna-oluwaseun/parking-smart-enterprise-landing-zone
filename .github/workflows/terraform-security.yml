@@ -114,4 +114,9 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           python scripts/validate_automation_rules.py
+
+      - name: Test password spray detection logic
+        working-directory: ${{ github.workspace }}
+        run: |
+          python scripts/test_password_spray_detection.py    
           
