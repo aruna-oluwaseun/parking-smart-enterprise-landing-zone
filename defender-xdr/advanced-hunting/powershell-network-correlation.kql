@@ -1,0 +1,73 @@
+// ==========================================================
+// Defender XDR Advanced Hunt:
+// PowerShell Execution Followed by Network Activity
+//
+// Hypothesis:
+// An attacker may use PowerShell to execute malicious code
+// and then establish outbound network communication for
+// payload retrieval, command-and-control, or exfiltration.
+//
+// MITRE ATT&CK:
+// T1059.001 - PowerShell
+// T1105     - Ingress Tool Transfer
+// T1071     - Application Layer Protocol
+//
+// Data Sources:
+// DeviceProcessEvents
+// DeviceNetworkEvents
+// ==========================================================
+
+let SuspiciousPowerShell =
+    DeviceProcessEvents
+    | where FileName in~ ("powershell.exe", "pwsh.exe")
+    | where ProcessCommandLine has_any (
+        "Invoke-WebRequest",
+        "DownloadString",
+        "DownloadFile",
+        "Invoke-Expression",
+        "IEX",
+        "-EncodedCommand",
+        "-enc ",
+        "FromBase64String"
+    )
+    | project
+        ProcessTime = Timestamp,
+        DeviceId,
+        DeviceName,
+        AccountName,
+        ProcessId,
+        ProcessCommandLine,
+        InitiatingProcessFileName,
+        SHA1,
+        SHA256;
+
+let NetworkConnections =
+    DeviceNetworkEvents
+    | where ActionType == "ConnectionSuccess"
+    | project
+        NetworkTime = Timestamp,
+        DeviceId,
+        InitiatingProcessId,
+        RemoteIP,
+        RemotePort,
+        RemoteUrl,
+        Protocol;
+
+SuspiciousPowerShell
+| join kind=inner NetworkConnections
+    on DeviceId
+| where InitiatingProcessId == ProcessId
+| where NetworkTime between (ProcessTime .. ProcessTime + 10m)
+| project
+    ProcessTime,
+    NetworkTime,
+    DeviceName,
+    AccountName,
+    ProcessCommandLine,
+    RemoteIP,
+    RemotePort,
+    RemoteUrl,
+    Protocol,
+    SHA1,
+    SHA256
+| order by NetworkTime desc

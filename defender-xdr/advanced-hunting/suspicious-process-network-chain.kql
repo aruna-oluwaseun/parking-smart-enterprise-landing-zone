@@ -1,0 +1,87 @@
+// ==========================================================
+// Defender XDR Advanced Hunt:
+// Suspicious LOLBin Execution Followed by Network Activity
+//
+// Hypothesis:
+// An attacker may abuse trusted Windows binaries to execute,
+// download, proxy, or retrieve malicious content while blending
+// into legitimate operating-system activity.
+//
+// MITRE ATT&CK:
+// T1218 - System Binary Proxy Execution
+// T1105 - Ingress Tool Transfer
+// T1071 - Application Layer Protocol
+//
+// Data Sources:
+// DeviceProcessEvents
+// DeviceNetworkEvents
+// ==========================================================
+
+let CorrelationWindow = 10m;
+
+let SuspiciousProcesses =
+    DeviceProcessEvents
+    | where FileName in~ (
+        "certutil.exe",
+        "bitsadmin.exe",
+        "mshta.exe",
+        "rundll32.exe",
+        "regsvr32.exe"
+    )
+    | where ProcessCommandLine has_any (
+        "http://",
+        "https://",
+        "urlcache",
+        "split",
+        "transfer",
+        "javascript:",
+        "vbscript:",
+        "scrobj.dll"
+    )
+    | project
+        ProcessTime = Timestamp,
+        DeviceId,
+        DeviceName,
+        AccountName,
+        ProcessId,
+        FileName,
+        ProcessCommandLine,
+        InitiatingProcessFileName,
+        InitiatingProcessCommandLine,
+        SHA1,
+        SHA256;
+
+let NetworkActivity =
+    DeviceNetworkEvents
+    | where ActionType == "ConnectionSuccess"
+    | project
+        NetworkTime = Timestamp,
+        DeviceId,
+        InitiatingProcessId,
+        RemoteIP,
+        RemotePort,
+        RemoteUrl,
+        Protocol;
+
+SuspiciousProcesses
+| join kind=inner NetworkActivity on DeviceId
+| where InitiatingProcessId == ProcessId
+| where NetworkTime between (
+    ProcessTime .. ProcessTime + CorrelationWindow
+)
+| project
+    ProcessTime,
+    NetworkTime,
+    DeviceName,
+    AccountName,
+    FileName,
+    ProcessCommandLine,
+    InitiatingProcessFileName,
+    InitiatingProcessCommandLine,
+    RemoteIP,
+    RemotePort,
+    RemoteUrl,
+    Protocol,
+    SHA1,
+    SHA256
+| order by NetworkTime desc
