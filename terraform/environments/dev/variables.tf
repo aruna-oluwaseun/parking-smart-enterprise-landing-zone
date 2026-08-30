@@ -74,6 +74,12 @@ variable "spoke_aks_subnet_prefix" {
   default     = "10.20.2.0/23"
 }
 
+variable "spoke_private_endpoint_subnet_prefix" {
+  description = "Address prefix for private endpoints in the application spoke."
+  type        = string
+  default     = "10.20.4.0/24"
+}
+
 variable "aks_node_vm_size" {
   type    = string
   default = "Standard_D2as_v5"

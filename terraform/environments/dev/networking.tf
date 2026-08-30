@@ -42,3 +42,8 @@ resource "azurerm_virtual_network_peering" "application_to_hub" {
   allow_forwarded_traffic      = true
 }
 
+resource "azurerm_subnet_network_security_group_association" "private_endpoints" {
+  subnet_id                 = azurerm_subnet.private_endpoints.id
+  network_security_group_id = azurerm_network_security_group.private_endpoints.id
+}
+

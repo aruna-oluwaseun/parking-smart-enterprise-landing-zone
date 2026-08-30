@@ -120,6 +120,19 @@ resource "azurerm_subnet" "aks" {
 }
 
 ##############################################
+# Private Endpoint Subnet
+##############################################
+
+resource "azurerm_subnet" "private_endpoints" {
+  name                 = "snet-private-endpoints"
+  resource_group_name  = azurerm_resource_group.networking.name
+  virtual_network_name = azurerm_virtual_network.application_spoke.name
+  address_prefixes     = [var.spoke_private_endpoint_subnet_prefix]
+
+  private_endpoint_network_policies = "Disabled"
+}
+
+##############################################
 # Hub Management NSG
 ##############################################
 
@@ -162,6 +175,30 @@ resource "azurerm_network_security_group" "application" {
     destination_port_range     = "*"
     source_address_prefix      = var.hub_vnet_address_space[0]
     destination_address_prefix = var.application_vnet_address_space[0]
+  }
+
+  tags = local.common_tags
+}
+
+##############################################
+# Private Endpoint NSG
+##############################################
+
+resource "azurerm_network_security_group" "private_endpoints" {
+  name                = "nsg-${local.name_prefix}-private-endpoints"
+  location            = azurerm_resource_group.networking.location
+  resource_group_name = azurerm_resource_group.networking.name
+
+  security_rule {
+    name                       = "AllowVNetInbound"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "*"
+    source_port_range          = "*"
+    destination_port_range     = "*"
+    source_address_prefix      = "VirtualNetwork"
+    destination_address_prefix = "VirtualNetwork"
   }
 
   tags = local.common_tags
