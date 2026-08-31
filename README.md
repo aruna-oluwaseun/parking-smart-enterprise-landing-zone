@@ -821,25 +821,7 @@ This project demonstrates practical experience across:
 
 ---
 
-# Target Roles
-
-The project is designed to demonstrate skills relevant to roles including:
-
-- Cloud Security Engineer
-- DevSecOps Engineer
-- Application / Product Security Engineer
-- Security Engineer
-- Detection Engineer
-- Threat Detection Engineer
-- Microsoft Sentinel Engineer
-- Defender XDR Engineer
-- Security Automation Engineer
-- SOC / Detection Content Engineer
-
----
 
 ## Author
 
 **Aruna Oluwaseun**
-
-Cloud Security | DevSecOps | Detection Engineering | Microsoft Azure
