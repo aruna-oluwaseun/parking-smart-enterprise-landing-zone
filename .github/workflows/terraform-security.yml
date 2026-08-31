@@ -73,6 +73,7 @@ jobs:
         uses: anchore/sbom-action/download-syft@v0
 
       - name: Generate repository SBOM
+        working-directory: ${{ github.workspace }}
         run: syft dir:. -o cyclonedx-json=sbom.json
 
       - name: Upload SBOM artifact
