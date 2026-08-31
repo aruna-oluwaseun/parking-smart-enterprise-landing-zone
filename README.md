@@ -1,358 +1,488 @@
-Enterprise Cloud Security Platform
+# Enterprise Cloud Security Platform
 
-Production-inspired Azure security engineering platform combining Infrastructure as Code, cloud security, DevSecOps, Microsoft Sentinel, Defender XDR, Detection-as-Code, threat hunting, SOAR and security automation.
+> Production-inspired Azure cloud security platform combining Infrastructure as Code, DevSecOps, Detection Engineering, Microsoft Sentinel, Defender XDR and automated security validation.
 
-Overview
+---
 
-The Enterprise Cloud Security Platform is a security engineering project designed to demonstrate how cloud infrastructure, preventive controls, detection engineering, threat hunting and automated incident response can be managed as code.
+## Overview
 
-Built around Microsoft Azure, Terraform and the Microsoft security ecosystem, the project combines:
+The Enterprise Cloud Security Platform is a hands-on security engineering project demonstrating how cloud infrastructure, preventive controls, detection engineering, threat hunting and security automation can be managed as code.
 
-Azure landing-zone architecture
-Hub-and-spoke networking
-Infrastructure as Code
-Cloud security hardening
-Microsoft Defender for Cloud
-Microsoft Defender XDR
-Microsoft Sentinel
-KQL detection engineering
-Detection-as-Code
-Threat hunting
-SOAR and incident-response automation
-Detection tuning and regression testing
-DevSecOps security controls
-Infrastructure security scanning
-Software supply-chain security foundations
+The platform uses Microsoft Azure and Terraform to build a secure landing-zone-style environment and integrates:
 
-Rather than treating infrastructure, SIEM detections and automation as separate labs, the repository models them as components of an integrated security engineering platform.
+- Azure hub-and-spoke networking
+- Private networking for sensitive platform services
+- Azure Kubernetes Service (AKS)
+- Azure Container Registry (ACR)
+- Azure Key Vault
+- Azure Policy
+- Microsoft Defender for Cloud
+- Microsoft Sentinel
+- Microsoft Defender XDR
+- Detection-as-Code
+- Threat Hunting
+- Security Automation
+- DevSecOps security controls
+- Software supply-chain security tooling
+- Automated detection validation and regression testing
 
-Architecture
-                         GitHub
-                           │
-                           ▼
-                   GitHub Actions
-                           │
-        ┌──────────────────┼──────────────────┐
-        │                  │                  │
-        ▼                  ▼                  ▼
-    Terraform          IaC Security       Secret/Supply
-    Validation          Scanning          Chain Controls
-        │                  │                  │
-        │             Checkov/Trivy       Gitleaks/Syft
-        │                                     │
-        └──────────────────┬──────────────────┘
-                           │
-                           ▼
-                    Azure Landing Zone
-                           │
-              ┌────────────┼─────────────┐
-              ▼            ▼             ▼
-         Networking       AKS           ACR
-              │                          │
-              │                    Private Access
-              │
-              ├──── Key Vault
-              │       │
-              │   Private Endpoint
-              │
-              ▼
-       Defender for Cloud
-              │
-              ▼
-        Security Telemetry
-              │
-       ┌──────┴────────┐
-       ▼               ▼
-Microsoft Sentinel  Defender XDR
-       │               │
-       └───────┬───────┘
-               ▼
-       Detection Engineering
-               │
-        KQL Analytics Rules
-               │
-               ▼
-        Security Incidents
-               │
-        Automation Rules
-               │
-               ▼
-       Logic App Playbooks
-               │
-       ┌───────┼─────────┐
-       ▼       ▼         ▼
-   Enrichment Notify   Response
-               │
-               ▼
-       Security Operations
-Security Architecture
-Azure Landing Zone
+The objective is not simply to deploy cloud resources, but to demonstrate how infrastructure security, SecOps and DevSecOps controls can operate together as an integrated security platform.
 
-The infrastructure uses a hub-and-spoke network architecture to provide logical separation between shared management infrastructure and application workloads.
+---
 
-Implemented components include:
+# Architecture
 
-Hub virtual network
-Application spoke virtual network
-Hub-to-spoke and spoke-to-hub VNet peering
-Dedicated management subnet
-Application subnet
-Dedicated AKS subnet
-Dedicated private-endpoint subnet
-Network Security Groups
-NSG-to-subnet associations
-Resource-group separation
-Managed identities
-Azure RBAC
+```text
+                         GitHub Repository
+                                │
+                                ▼
+                       GitHub Actions CI/CD
+                                │
+          ┌─────────────────────┼──────────────────────┐
+          │                     │                      │
+          ▼                     ▼                      ▼
+      Terraform          Security Validation      Supply Chain
+          │                     │                      │
+          │              Checkov / Trivy              │
+          │                 Gitleaks              Syft / Cosign
+          │
+          ▼
+                  Azure Landing Zone
+                         │
+             ┌───────────┴───────────┐
+             │                       │
+             ▼                       ▼
+            Hub               Application Spoke
+             │                       │
+      Management Subnet      ┌───────┼─────────┐
+                             │       │         │
+                             ▼       ▼         ▼
+                         App Subnet  AKS    Private
+                                          Endpoints
+                                              │
+                                      ┌───────┴───────┐
+                                      ▼               ▼
+                                  Key Vault          ACR
+
+                         Azure Security
+                               │
+                 ┌─────────────┼─────────────┐
+                 ▼             ▼             ▼
+            Azure Policy   Defender      Monitoring
+                           for Cloud
+                               │
+                               ▼
+                       Microsoft Sentinel
+                               │
+                    Detection-as-Code
+                               │
+                       Analytics Rules
+                               │
+                          Incidents
+                               │
+                      Automation Rules
+                               │
+                      Logic App Playbooks
+                               │
+                        Security Response
+```
+
+Microsoft Defender XDR provides an additional detection and hunting layer for endpoint and cross-domain security investigations.
+
+---
+
+# Repository Structure
+
+```text
+.
+├── .github/
+│   └── workflows/
+│
+├── defender-xdr/
+│   ├── advanced-hunting/
+│   ├── custom-detections/
+│   └── incident-response/
+│
+├── detection-engineering/
+│   ├── metrics/
+│   ├── testing/
+│   └── tuning/
+│
+├── detections/
+│   └── sentinel/
+│
+├── diagrams/
+│
+├── docs/
+│
+├── hunt/
+│   ├── azure/
+│   ├── endpoint/
+│   └── identity/
+│
+├── scripts/
+│
+├── sentinel/
+│   ├── analytics-rules/
+│   ├── automation-rules/
+│   └── playbooks/
+│
+└── terraform/
+    ├── bootstrap/
+    └── environments/
+        └── dev/
+```
+
+---
+
+# 1. Azure Landing Zone
+
+The infrastructure layer is implemented using Terraform and follows a landing-zone-style architecture.
+
+Core capabilities include:
+
+- Resource-group separation
+- Hub-and-spoke networking
+- Dedicated management subnet
+- Application subnet
+- AKS subnet
+- Dedicated private-endpoint subnet
+- Network Security Groups
+- VNet peering
+- Managed identities
+- Azure RBAC
+- Azure Policy
+- Central monitoring and security services
+
+The network architecture separates platform, application and private-service connectivity rather than placing all resources into a single flat network.
+
+---
+
+# 2. Private Networking and Platform Hardening
+
+Sensitive platform services are designed to avoid unnecessary public exposure.
+
+## Azure Key Vault
+
+Security controls include:
+
+- Azure RBAC authorization
+- Managed-identity access
+- Purge protection
+- Soft delete
+- Restricted network access
+- Private Endpoint connectivity
+- Private DNS integration
+
+## Azure Container Registry
+
+ACR is configured with:
+
+- Premium SKU
+- Administrative account disabled
+- Public network access disabled
+- Private Endpoint connectivity
+- Private DNS integration
+
+The platform therefore provides private connectivity between workloads and critical supporting services.
+
+---
+
+# 3. Azure Kubernetes Service
+
+AKS infrastructure is represented as code and integrated into the application spoke.
+
+Capabilities include:
+
+- Dedicated AKS subnet
+- Managed identity
+- Azure RBAC integration
+- Network integration
+- Security-policy controls
+- Controlled deployment through Terraform variables
+
+AKS deployment can be enabled or disabled depending on the target environment and deployment requirements.
+
+---
+
+# 4. Microsoft Defender for Cloud
+
+Microsoft Defender for Cloud configuration is managed through Terraform.
+
+The platform uses Defender as part of the cloud workload protection layer alongside Azure Policy, infrastructure hardening and Microsoft Sentinel.
+
+This demonstrates the distinction between:
+
+**Preventive controls**
+
+```text
+Terraform
 Azure Policy
+RBAC
+NSGs
+Private Endpoints
+```
 
-Infrastructure is provisioned and managed using Terraform.
+and:
 
-Private Networking
+**Detective / response controls**
 
-Private networking is used to reduce exposure of sensitive platform services.
-
-The platform includes:
-
-Application Spoke
-10.20.0.0/16
-│
-├── Application Subnet
-│
-├── AKS Subnet
-│
-└── Private Endpoint Subnet
-        │
-        ├── Key Vault Private Endpoint
-        │
-        └── ACR Private Endpoint
-
-Private DNS provides name resolution for privately exposed Azure services.
-
-Key Vault hardening includes:
-
-Public network access disabled
-Default-deny network ACLs
-Private Endpoint
-Private DNS
-Azure RBAC
-Managed-identity-based access
-Purge protection
-Soft-delete protection
-
-ACR private-networking hardening is implemented in Terraform as part of the final V1 hardening phase.
-
-Azure Kubernetes Service
-
-The platform contains Terraform configuration for AKS and supporting network/RBAC integration.
-
-Security considerations include:
-
-Dedicated AKS subnet
-Managed identity
-Network isolation
-Azure RBAC integration
-Defender integration
-Container-registry integration
-Infrastructure security scanning
-
-AKS deployment can be controlled through Terraform configuration to avoid unnecessary resource consumption in development environments.
-
-Microsoft Defender for Cloud
-
-Defender for Cloud provides cloud security posture and workload protection capabilities.
-
-The project incorporates Defender configuration into Infrastructure as Code and uses Defender as part of the broader cloud-security monitoring architecture.
-
-This provides a preventative and detection layer alongside Azure Policy, Sentinel and Defender XDR.
-
-Microsoft Defender XDR
-
-The project includes a dedicated:
-
-defender-xdr/
-
-security-engineering area covering Microsoft Defender XDR detection and investigation concepts.
-
-Defender XDR complements Sentinel by providing endpoint and identity-focused telemetry and investigation capabilities that can be correlated with cloud security events.
-
+```text
+Defender for Cloud
 Microsoft Sentinel
-
-Microsoft Sentinel provides the SIEM and SOAR layer of the platform.
-
-Sentinel infrastructure and security content are managed through Terraform and source-controlled configuration.
-
-The platform includes:
-
-Log Analytics integration
-Microsoft Sentinel enablement
-Analytics rules
-Automation rules
-Logic App playbooks
-Detection content
-Incident-response workflows
-KQL hunting queries
+Defender XDR
 Detection Engineering
+Security Automation
+```
 
-Detection logic is maintained separately from deployment configuration.
+---
 
-detections/
-└── sentinel/
-    └── KQL detection logic
+# 5. Microsoft Sentinel
 
-sentinel/
-├── analytics-rules/
-├── automation-rules/
-└── playbooks/
+Microsoft Sentinel provides the SIEM and security-automation layer.
 
-detection-engineering/
-└── tuning, testing and measurement
+The repository currently contains:
 
-This separation allows detection logic to be developed and tested independently while the Sentinel configuration controls how that logic is operationalised.
+- 20 analytics rules
+- 4 automation rules
+- 4 response playbooks
+- Terraform-based Sentinel deployment
+- KQL detection content
+- MITRE ATT&CK mapping
+- Automated content validation
 
-Implemented detection scenarios include identity, Azure control-plane, Key Vault and endpoint activity.
+---
 
-Examples include:
+# 6. Detection-as-Code
 
-Password spraying
-Impossible travel
-Failed authentication
-MFA disablement
-OAuth consent attacks
-Token replay
-Privileged role assignment
-Guest-user privilege escalation
-Service-principal creation
-Key Vault secret-access anomalies
-Key Vault firewall modification
-Azure Policy deletion
-Diagnostic-settings deletion
-NSG modification
-Public storage exposure
-Suspicious resource creation
-Suspicious PowerShell activity
-Security configuration changes
-Detection-as-Code
+Detection logic is maintained as version-controlled code.
 
-Security detections are treated as software artifacts rather than manually created SIEM configuration.
+The workflow is:
 
-KQL
- │
- ▼
-Detection Logic
- │
- ▼
-Analytics Rule
- │
- ▼
-Automated Validation
- │
- ▼
-Source Control
- │
- ▼
+```text
+Threat Scenario
+      │
+      ▼
+KQL Detection
+      │
+      ▼
+Detection Testing / Tuning
+      │
+      ▼
+Sentinel Analytics Rule
+      │
+      ▼
+Terraform Deployment
+      │
+      ▼
 Microsoft Sentinel
+      │
+      ▼
+Incident
+```
 
-The project currently validates 20 Sentinel analytics rules through automated Python validation.
+The `detections/sentinel/` directory contains underlying KQL detection logic.
 
-This approach enables:
+The `sentinel/analytics-rules/` directory contains operational Sentinel rule definitions including metadata required to deploy and manage those detections.
 
-Version control
-Repeatable deployment
-Peer review
-Automated validation
-Consistent metadata
-MITRE ATT&CK mapping
-Detection lifecycle management
-Detection Testing
+This separation allows detection logic to be developed independently while still being packaged as deployable SIEM content.
 
-Detection engineering extends beyond simply writing KQL.
+---
 
-The project includes automated regression testing for detection behaviour.
+# 7. Sentinel Detection Coverage
 
-The password-spray detection, for example, is tested against scenarios including:
+The platform currently contains 20 Sentinel analytics rules.
 
-Below-threshold activity
-Exact detection boundaries
-Above-threshold activity
-Insufficient target-account diversity
-Single-account brute force
-Distributed source IP addresses
-Clear password-spray behaviour
-Successful authentication events
+## Identity and Authentication
 
-The current password-spray regression suite contains 8 automated test cases.
+- Failed Sign-ins
+- Disabled Account Sign-in
+- Password Spray
+- Impossible Travel
+- MFA Disabled
+- OAuth Consent Attack
+- Token Replay
+- Guest User Privilege Escalation
+- Privileged Role Assignment
+- Service Principal Creation
 
-This helps prevent detection changes from silently altering expected security behaviour.
+## Azure Infrastructure and Configuration
 
-Detection Tuning
+- Azure Policy Deleted
+- Diagnostic Settings Deleted
+- NSG Modified
+- Storage Public Access Enabled
+- Key Vault Firewall Disabled
+- Resource Creation Anomaly
+- Security Configuration Change
 
-The platform includes detection-tuning documentation and methodology.
+## Secrets and Key Vault
 
-Tuning considers:
+- Key Vault Access Spike
+- Excessive Secret Access
 
-False positives
-False negatives
-Detection thresholds
-Time windows
-Entity behaviour
-Environmental baselines
-Detection precision
-Detection coverage
+## Endpoint
 
-This provides a lifecycle around detections rather than treating them as static KQL queries.
+- Suspicious PowerShell
 
-Detection Metrics
+---
 
-Detection effectiveness is considered through metrics designed to measure the quality and operational value of security rules.
+# 8. Detection Engineering Lifecycle
 
-The project includes documentation around detection measurement and continuous improvement.
+The project goes beyond simply storing KQL queries.
 
-Threat Hunting
+The `detection-engineering/` layer documents how detections move through an engineering lifecycle:
 
-A dedicated threat-hunting library is implemented under:
+```text
+Threat Identification
+        │
+        ▼
+Detection Design
+        │
+        ▼
+Implementation
+        │
+        ▼
+Testing
+        │
+        ▼
+Deployment
+        │
+        ▼
+Monitoring
+        │
+        ▼
+Tuning
+        │
+        ▼
+Metrics / Improvement
+```
 
-hunt/
-├── identity/
-├── azure/
-└── endpoint/
+The repository includes:
 
-Current hunting scenarios include:
+- Detection lifecycle documentation
+- Validation strategy
+- Detection test cases
+- Password-spray tuning documentation
+- General tuning guidance
+- Detection metrics
 
-Identity
-Password spray followed by successful authentication
-Privileged role assignment followed by sign-in
-Suspicious service-principal activity
-Azure
-Key Vault secret access after role change
-Security-control tampering
-Suspicious resource creation after role change
-Endpoint
-Suspicious LOLBin execution
-Suspicious PowerShell download/execution
+This demonstrates detection engineering as a repeatable software-engineering process rather than one-off SIEM query creation.
 
-Hunting queries differ from scheduled detections by supporting proactive investigation of suspicious behaviours and attack hypotheses.
+---
 
-MITRE ATT&CK
+# 9. Detection Regression Testing
 
-Detection and hunting content is mapped to relevant MITRE ATT&CK techniques and tactics.
+The password-spray detection includes automated regression testing implemented in Python.
 
-Coverage includes areas such as:
+Current test coverage includes:
 
-Initial Access
-Execution
-Persistence
-Privilege Escalation
-Credential Access
-Defense Evasion
-Collection
+```text
+TC01  Below failed-attempt threshold
+TC02  Exact detection boundary
+TC03  Above detection threshold
+TC04  Below target-account threshold
+TC05  Single-account brute force
+TC06  Distributed source IP addresses
+TC07  Clear password spray
+TC08  Successful authentication events
+```
 
-MITRE ATT&CK provides a common framework for describing attacker behaviour and evaluating detection coverage.
+The tests verify that changes to detection logic do not unintentionally change expected detection behaviour.
 
-Security Automation and SOAR
+Current validation result:
 
-Sentinel automation rules connect detected security activity to response workflows.
+```text
+8/8 password-spray regression tests passing
+```
 
+---
+
+# 10. Automated Sentinel Content Validation
+
+Python validation scripts verify Sentinel content before changes are accepted into the security pipeline.
+
+Current validation coverage:
+
+```text
+20/20 Sentinel analytics rules passing
+4/4 Sentinel automation rules passing
+8/8 password-spray regression tests passing
+```
+
+Validation checks are integrated into GitHub Actions.
+
+This introduces CI/CD principles into detection engineering and helps prevent malformed or incomplete security content from reaching deployment.
+
+---
+
+# 11. Threat Hunting
+
+The project includes a dedicated threat-hunting library covering Azure, identity and endpoint scenarios.
+
+Current hunts include:
+
+## Identity
+
+- Password Spray Followed by Successful Authentication
+- Privileged Role Assignment Followed by Sign-in
+- Suspicious Service Principal Activity
+
+## Azure
+
+- Key Vault Secret Access After Role Change
+- Security Control Tampering
+- Suspicious Resource Creation After Role Change
+
+## Endpoint
+
+- Suspicious LOLBin Execution
+- Suspicious PowerShell Download and Execution
+
+The hunts focus particularly on behavioural correlation where individual events may not be sufficiently suspicious on their own.
+
+---
+
+# 12. Microsoft Defender XDR
+
+The project also includes Microsoft Defender XDR security engineering content.
+
+## Advanced Hunting
+
+- Credential Access Behaviour
+- PowerShell and Network Correlation
+- Suspicious Process and Network Chain
+
+## Custom Detection Logic
+
+- LOLBin Network Activity
+- Suspicious PowerShell Download
+
+The Defender XDR layer demonstrates endpoint and cross-domain hunting alongside the Azure/Sentinel security-monitoring architecture.
+
+---
+
+# 13. Security Automation and SOAR
+
+Four Microsoft Sentinel automation rules are maintained as code.
+
+Automation coverage currently includes:
+
+- Guest User Privilege Escalation
+- Impossible Travel
+- Key Vault Access Spike
+- Password Spray
+
+Response playbooks include:
+
+- Notify Security Team
+- IOC Enrichment
+- Create Incident
+- Disable Account
+
+The response flow is designed around:
+
+```text
 Detection
     │
     ▼
@@ -367,171 +497,349 @@ Automation Rule
     ▼
 Logic App Playbook
     │
-    ├── Enrichment
-    ├── Notification
-    └── Response
+    ▼
+Enrichment / Notification / Containment
+```
 
-Automation content is maintained as code and validated automatically.
+---
 
-Implemented workflows include security notification and enrichment capabilities, with response workflows designed around managed identity and controlled permissions.
+# 14. DevSecOps Security Pipeline
 
-DevSecOps Pipeline
+GitHub Actions continuously validates infrastructure and security content.
 
-GitHub Actions provides automated security validation.
+The pipeline performs:
 
-The current pipeline performs:
+```text
+Source Code
+    │
+    ├── Terraform fmt
+    ├── Terraform init
+    ├── Terraform validate
+    │
+    ├── Checkov IaC scanning
+    ├── Trivy configuration scanning
+    ├── Gitleaks secret detection
+    │
+    ├── Syft SBOM generation
+    ├── Cosign tooling validation
+    │
+    ├── Sentinel analytics-rule validation
+    ├── Sentinel automation-rule validation
+    └── Detection regression testing
+```
 
-Commit / Pull Request
+The pipeline currently completes successfully across all jobs.
+
+---
+
+# 15. Infrastructure Security Scanning
+
+## Checkov
+
+Checkov is used to statically analyse Terraform configuration for cloud-security misconfigurations.
+
+Current V1 baseline:
+
+```text
+Passed checks: 63
+Failed checks: 0
+Skipped checks: 1
+```
+
+The intentional skip relates to `CKV_AZURE_164`.
+
+The legacy Azure Container Registry Docker Content Trust control represented by this check is not implemented as an architectural requirement. The exception is documented directly alongside the ACR resource.
+
+The project instead includes modern software-supply-chain tooling such as SBOM generation and Cosign tooling, with workload image-signing enforcement reserved for workload integration.
+
+A known Checkov parsing limitation also affects `policy.tf`; Terraform's native validation is used as the authoritative syntax validation for the Terraform configuration.
+
+---
+
+# 16. Secret Detection
+
+Gitleaks scans repository history and source content for accidentally committed credentials and secrets.
+
+The current pipeline completes with:
+
+```text
+No leaks detected
+```
+
+Terraform state, real `.tfvars`, environment files, keys and other sensitive local artifacts are excluded from source control.
+
+---
+
+# 17. Software Supply-Chain Security
+
+The pipeline includes software supply-chain controls.
+
+## SBOM
+
+Syft generates a CycloneDX software bill of materials for the repository.
+
+The generated SBOM is retained as a GitHub Actions artifact.
+
+## Cosign
+
+Cosign is installed and validated in the pipeline as the signing technology selected for future workload-artifact signing.
+
+Actual application/container signing will be introduced when a deployable workload is integrated with the platform.
+
+This distinction prevents the repository from claiming image-signing enforcement before an application image is part of the V1 deployment.
+
+---
+
+# 18. Security Documentation
+
+The project includes supporting engineering and operational documentation:
+
+```text
+docs/
+├── architecture.md
+├── detection-catalog.md
+├── incident-response.md
+├── security-findings.md
+├── security-runbook.md
+└── threat-model.md
+```
+
+These documents capture architecture, detection coverage, security findings, incident response procedures and threat modelling.
+
+---
+
+# 19. Security Engineering Model
+
+The overall platform follows a layered security model:
+
+```text
+                    PREVENT
+                       │
+        ┌──────────────┼──────────────┐
+        ▼              ▼              ▼
+     Terraform      Azure Policy     RBAC
         │
-        ├── Terraform fmt
-        ├── Terraform init
-        ├── Terraform validate
-        │
-        ├── Checkov
-        ├── Trivy
-        ├── Gitleaks
-        │
-        ├── SBOM generation
-        │      └── Syft / CycloneDX
-        │
-        ├── Cosign tooling validation
-        │
-        ├── Sentinel content validation
-        ├── Automation-rule validation
-        │
-        └── Detection regression tests
+        ▼
+ NSGs / Private Endpoints
+                       │
+                       ▼
+                    PROTECT
+                       │
+                       ▼
+              Defender for Cloud
+                       │
+                       ▼
+                    DETECT
+                       │
+        ┌──────────────┼──────────────┐
+        ▼              ▼              ▼
+    Sentinel       Defender XDR   Detection-as-Code
+                       │
+                       ▼
+                     HUNT
+                       │
+                       ▼
+               Threat Hunting
+                       │
+                       ▼
+                    RESPOND
+                       │
+                       ▼
+              Sentinel Automation
+                       │
+                       ▼
+               Logic App Playbooks
+                       │
+                       ▼
+                    IMPROVE
+                       │
+             ┌─────────┴─────────┐
+             ▼                   ▼
+           Tuning             Metrics
+```
 
-The pipeline fails when required validation or security controls fail, providing a security gate before infrastructure/security-content changes are accepted.
+---
 
-Infrastructure Security Scanning
+# 20. Technologies
 
-Checkov is used to assess Terraform against cloud-security best practices.
+## Cloud & Platform
 
-During V1 development, findings were used as engineering inputs rather than blindly suppressed.
+- Microsoft Azure
+- Azure Virtual Network
+- Azure Kubernetes Service
+- Azure Container Registry
+- Azure Key Vault
+- Azure Private Link
+- Azure Private DNS
+- Azure Policy
+- Azure Monitor
+- Microsoft Defender for Cloud
+- Microsoft Sentinel
+- Microsoft Defender XDR
 
-Remediation work included:
+## Infrastructure as Code
 
-Key Vault network ACL enforcement
-Key Vault public-access removal
-Key Vault Private Link
-Private DNS
-Private-endpoint subnet security
-ACR private-networking design
+- Terraform
+- AzureRM Provider
 
-Known scanner limitations and accepted exceptions are documented rather than hidden.
+## DevSecOps
 
-Software Supply-Chain Security
+- GitHub Actions
+- Checkov
+- Trivy
+- Gitleaks
 
-The platform repository includes foundations for software supply-chain security:
+## Software Supply Chain
 
-Secret scanning with Gitleaks
-SBOM generation with Syft
-CycloneDX SBOM format
-Cosign tooling
-Trivy security scanning
+- Syft
+- CycloneDX SBOM
+- Cosign
 
-Application build, SAST, SCA and container-image production belong to the separate application repository, maintaining separation between application delivery and security/platform infrastructure.
+## Detection Engineering
 
-Image-signing architecture uses modern signing approaches rather than relying on deprecated Docker Content Trust.
+- Kusto Query Language (KQL)
+- Microsoft Sentinel
+- Defender XDR Advanced Hunting
+- MITRE ATT&CK
+- Detection-as-Code
+- Detection Tuning
+- Detection Regression Testing
 
-Automated Security Validation
+## Automation & Languages
 
-Python is used to validate security content.
+- Python
+- PowerShell
+- YAML
+- JSON
+- Terraform / HCL
+- KQL
 
-Current automated validation includes:
+---
 
-20 Sentinel analytics rules
-        ↓
-Content validation
+# 21. Current Validation Status
 
-Automation rules
-        ↓
-Configuration validation
+| Security Control | Status |
+|---|---|
+| Terraform formatting | ✅ Passing |
+| Terraform validation | ✅ Passing |
+| Checkov | ✅ 0 failed checks |
+| Trivy | ✅ CI validated |
+| Gitleaks | ✅ No leaks detected |
+| SBOM generation | ✅ Working |
+| Sentinel analytics validation | ✅ 20/20 |
+| Sentinel automation validation | ✅ 4/4 |
+| Password-spray regression tests | ✅ 8/8 |
+| GitHub Actions security pipeline | ✅ Passing |
 
-Password-spray detection
-        ↓
-8 regression tests
+---
 
-This demonstrates the application of software-engineering practices to security operations content.
+# 22. V1 Project Status
 
-Repository Structure
+| Component | Status |
+|---|---|
+| Azure Landing Zone IaC | ✅ Implemented |
+| Hub-and-Spoke Networking | ✅ Implemented |
+| Private Endpoint Architecture | ✅ Implemented |
+| Key Vault Hardening | ✅ Implemented |
+| ACR Hardening | ✅ Implemented |
+| AKS Infrastructure | ✅ Implemented |
+| Azure Policy | ✅ Implemented |
+| Defender for Cloud IaC | ✅ Implemented |
+| Microsoft Sentinel IaC | ✅ Implemented |
+| Sentinel Analytics Rules | ✅ 20 |
+| Sentinel Automation Rules | ✅ 4 |
+| Logic App Playbooks | ✅ 4 |
+| Threat Hunting Library | ✅ Implemented |
+| Defender XDR Content | ✅ Implemented |
+| Detection Engineering Lifecycle | ✅ Implemented |
+| Detection Regression Testing | ✅ Implemented |
+| CI/CD Security Validation | ✅ Passing |
+| Final V1 Azure Deployment | ⏳ Pending |
+| Live Control Verification | ⏳ Pending |
 
-The repository has evolved beyond the original structure and now includes:
+---
 
-.
-├── .github/
-│   └── workflows/
-│
-├── defender-xdr/
-│
-├── detection-engineering/
-│
-├── detections/
-│   └── sentinel/
-│
-├── diagrams/
-│
-├── docs/
-│
-├── hunt/
-│   ├── azure/
-│   ├── endpoint/
-│   └── identity/
-│
-├── policies/
-│
-├── scripts/
-│
-├── sentinel/
-│   ├── analytics-rules/
-│   ├── automation-rules/
-│   └── playbooks/
-│
-└── terraform/
-    ├── bootstrap/
-    ├── environments/
-    │   └── dev/
-    └── modules/
-Security Engineering Principles
+# 23. Deployment Status
 
-The project applies several core security-engineering principles:
+The V1 infrastructure and security controls are currently validated through Terraform and the CI/CD security pipeline.
 
-Defence in depth — preventive, detective and responsive controls operate together.
+The final end-to-end Azure deployment and live control verification are intentionally treated as a separate release gate.
 
-Least privilege — RBAC and managed identities reduce unnecessary permissions and credential exposure.
+This prevents static validation from being represented as equivalent to successful runtime deployment.
 
-Private-by-design networking — sensitive Azure services are moved away from unnecessary public exposure.
+---
 
-Security as Code — infrastructure, detections and automation are source controlled.
+# 24. Future Roadmap
 
-Detection-as-Code — security detection logic is versioned, validated and tested.
+Post-V1 development may include:
 
-Shift-left security — security checks run during CI/CD rather than only after deployment.
+- Application workload integration
+- Container build pipeline
+- Cosign image signing and verification
+- Admission-time image verification
+- Expanded detection regression testing
+- Additional Defender XDR detections
+- Sentinel workbooks and dashboards
+- Python security automation
+- OSINT enrichment
+- AI/Agentic Security extension
+- AWS implementation of the platform architecture
 
-Assume breach — detection, hunting and incident-response capabilities complement preventative controls.
+---
 
-Continuous improvement — detections are tested, measured and tuned rather than considered complete once deployed.
+# Skills Demonstrated
 
-Validation
+This project demonstrates practical experience across:
 
-V1 uses multiple validation layers:
+- Azure Cloud Security
+- Cloud Security Architecture
+- Terraform
+- Infrastructure as Code
+- Azure Landing Zones
+- Network Security
+- Private Link / Private Endpoints
+- Identity and Access Management
+- Azure Policy
+- Microsoft Defender for Cloud
+- Microsoft Sentinel
+- Microsoft Defender XDR
+- KQL
+- Detection Engineering
+- Detection-as-Code
+- Detection Testing and Tuning
+- Threat Hunting
+- MITRE ATT&CK
+- Security Automation / SOAR
+- Incident Response
+- DevSecOps
+- Infrastructure Security Scanning
+- Secret Detection
+- Software Supply-Chain Security
+- SBOM
+- CI/CD Security
+- Python Security Automation
 
-Terraform
-├── terraform fmt
-└── terraform validate
+---
 
-Infrastructure Security
-├── Checkov
-└── Trivy
+# Target Roles
 
-Secrets
-└── Gitleaks
+The project is designed to demonstrate skills relevant to roles including:
 
-Supply Chain
-├── Syft
-└── Cosign tooling
+- Cloud Security Engineer
+- DevSecOps Engineer
+- Application / Product Security Engineer
+- Security Engineer
+- Detection Engineer
+- Threat Detection Engineer
+- Microsoft Sentinel Engineer
+- Defender XDR Engineer
+- Security Automation Engineer
+- SOC / Detection Content Engineer
 
-Detection Engineering
-├── Analytics-rule validation
-├── Automation-rule validation
-└── Detection regression tests
+---
+
+## Author
+
+**Aruna Oluwaseun**
+
+Cloud Security | DevSecOps | Detection Engineering | Microsoft Azure
